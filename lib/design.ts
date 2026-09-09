@@ -24,6 +24,14 @@ export type Design = {
   radius: number;
   shadow: string;
   button: string;
+  chartPalette: string;
+  chartColors: string[];
+  chartTitleSize: number;
+  chartLabelSize: number;
+  chartAxisSize: number;
+  chartCardPadding: number;
+  chartLegend: string;
+  chartGrid: string;
 };
 const semantic = { success: '#247351', warning: '#9A650C', danger: '#C13E3E' };
 export const palettes = [
@@ -152,6 +160,23 @@ export const fontNames: Record<string, string> = {
   serif: '人文宋体',
   humanist: '柔和几何',
 };
+export const chartPalettes = [
+  {
+    name: '清晰分类',
+    note: '色盲友好 · 适合离散类别',
+    colors: ['#0072B2', '#B66800', '#00875F', '#A64E87', '#C44A1B', '#247C9E'],
+  },
+  {
+    name: '克制商务',
+    note: '低饱和 · 适合运营看板',
+    colors: ['#3B657A', '#6D8D78', '#B28B55', '#8C6F8F', '#B5665D', '#6F7E9D'],
+  },
+  {
+    name: '单色层级',
+    note: '同一指标的强弱与顺序',
+    colors: ['#174F7A', '#2F6E9D', '#4E8AB3', '#75A5C8', '#9FC1D9', '#CADDE9'],
+  },
+] as const;
 export const defaults: Design = {
   name: '我的设计规范',
   palette: palettes[0].name,
@@ -165,6 +190,14 @@ export const defaults: Design = {
   radius: 8,
   shadow: '轻盈',
   button: '实色',
+  chartPalette: chartPalettes[0].name,
+  chartColors: [...chartPalettes[0].colors],
+  chartTitleSize: 16,
+  chartLabelSize: 12,
+  chartAxisSize: 11,
+  chartCardPadding: 20,
+  chartLegend: '顶部左对齐',
+  chartGrid: '仅横向',
 };
 export function luminance(hex: string) {
   const v = hex
@@ -228,6 +261,13 @@ export function tokens(s: Design): Record<string, string> {
         : s.shadow === '轻盈'
           ? '0 3px 12px rgb(0 0 0 / 4%)'
           : '0 8px 24px rgb(0 0 0 / 10%)',
+    '--chart-title': `${s.chartTitleSize}px`,
+    '--chart-label': `${s.chartLabelSize}px`,
+    '--chart-axis': `${s.chartAxisSize}px`,
+    '--chart-card-padding': `${s.chartCardPadding}px`,
+    ...Object.fromEntries(
+      s.chartColors.map((color, index) => [`--chart-${index + 1}`, color]),
+    ),
   };
 }
 export function checks(s: Design) {
@@ -240,6 +280,14 @@ export function checks(s: Design) {
     ['主色文字 / 容器', contrast(c.primary, c.surface)],
     ['按钮文字 / 主色', contrast(onColor(c.primary), c.primary)],
   ] as [string, number][];
+}
+export function chartChecks(s: Design) {
+  return s.chartColors.map((color, index) => ({
+    label: `图表色 ${index + 1}`,
+    color,
+    ratio: contrast(color, s.colors.surface),
+    pass: contrast(color, s.colors.surface) >= 3,
+  }));
 }
 export function sanitize(value: unknown): Design | null {
   if (!value || typeof value !== 'object') return null;
@@ -262,11 +310,46 @@ export function sanitize(value: unknown): Design | null {
     radius: Math.max(0, Math.min(24, Number(v.radius) || 0)),
     shadow: ['无阴影', '轻盈', '柔和'].includes(v.shadow) ? v.shadow : '轻盈',
     button: ['实色', '描边'].includes(v.button) ? v.button : '实色',
+    chartPalette:
+      typeof v.chartPalette === 'string'
+        ? v.chartPalette
+        : defaults.chartPalette,
+    chartColors:
+      Array.isArray(v.chartColors) &&
+      v.chartColors.length === 6 &&
+      v.chartColors.every((color) => /^#[0-9a-f]{6}$/i.test(color))
+        ? v.chartColors
+        : [...defaults.chartColors],
+    chartTitleSize: Math.max(
+      14,
+      Math.min(20, Number(v.chartTitleSize) || defaults.chartTitleSize),
+    ),
+    chartLabelSize: Math.max(
+      11,
+      Math.min(16, Number(v.chartLabelSize) || defaults.chartLabelSize),
+    ),
+    chartAxisSize: Math.max(
+      10,
+      Math.min(14, Number(v.chartAxisSize) || defaults.chartAxisSize),
+    ),
+    chartCardPadding: Math.max(
+      16,
+      Math.min(32, Number(v.chartCardPadding) || defaults.chartCardPadding),
+    ),
+    chartLegend: ['顶部左对齐', '顶部右对齐', '底部左对齐'].includes(
+      v.chartLegend,
+    )
+      ? v.chartLegend
+      : defaults.chartLegend,
+    chartGrid: ['仅横向', '横纵都有', '不显示'].includes(v.chartGrid)
+      ? v.chartGrid
+      : defaults.chartGrid,
   };
 }
 export function markdown(s: Design) {
   const t = typeSizes(s);
   const warn = checks(s).filter(([, r]) => r < 4.5);
+  const chartWarn = chartChecks(s).filter((item) => !item.pass);
   return `# ${s.name.replace(/[\r\n#]/g, ' ').trim() || '我的设计规范'}
 
 > 由基调生成。此文件是本项目所有页面的统一视觉约束；请先阅读，再生成或修改 UI。
@@ -316,7 +399,31 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - Error：错误文字靠近输入项；Empty：说明原因和下一步；Success：明确反馈结果，不仅变色。
 - 动效仅用于状态反馈，时长 160ms，尊重 prefers-reduced-motion。
 
-## 6. CSS 变量
+## 6. 数据可视化规范
+- 图表先回答一个问题，再选择图形。标题直接写清指标或结论，避免“数据分析”“趋势图”一类空泛标题。
+- 图表卡片：标题位于左上角，字号 ${s.chartTitleSize}px、字重 600；副标题与口径说明字号 ${s.chartLabelSize}px；坐标轴、刻度、图例和数据来源字号 ${s.chartAxisSize}px。
+- 卡片内边距：${s.chartCardPadding}px；标题区、图例区、绘图区和来源区保持稳定顺序。标题可换行，筛选或操作放在标题区右侧。
+- 图例：${s.chartLegend}；网格线：${s.chartGrid}。网格线使用边框色，不抢数据；轴线只在理解刻度所必需时出现。
+- 数据文字使用主要文字色；坐标轴、图例、口径和来源使用次要文字色；正负向语义分别使用成功色和错误色，不能只靠红绿区分。
+- 分类色板（${s.chartPalette}）：${s.chartColors.join('、')}。同一业务对象跨图保持同色；单序列默认使用品牌主色，多序列再启用分类色。
+- 图表色与卡片背景的图形对比度：${chartChecks(s)
+    .map(
+      (item) =>
+        `${item.label} ${item.ratio.toFixed(2)}:1 ${item.pass ? '通过' : '需调整'}`,
+    )
+    .join('；')}。图形对象以 3:1 为检查阈值。
+
+| 图表 | 适用问题 | 统一规则 |
+| --- | --- | --- |
+| 柱状图 | 类别比较、排名 | 数值轴从 0 开始；长标签改用横向条形；无业务顺序时按数值排序；单序列不使用彩虹色。 |
+| 折线图 | 连续时间趋势 | 建议至少 8–12 个时间点；线宽 2px、点默认隐藏；重点序列实线高亮，其余降噪；缺失值不得自动连线。 |
+| 饼图 / 环图 | 少量类别的粗略占比 | 最多 5 个主要扇区，其余合并“其他”；显示总量或明确分母；需要精确比较时改用 100% 堆叠条形图。禁用 3D 与分离扇区。 |
+| 桑基图 | 阶段间的数量流向 | 从左到右；节点按阶段分列并保持同一业务对象颜色；流带宽度映射数值；标签贴近节点；控制交叉，提供总量与口径。 |
+
+图表不能只用颜色传达信息：同时使用直接标签、线型、节点名称或数值。Tooltip 保留系列名、原始值、单位与时间；数字统一千分位和小数位。加载、空数据、错误、数据截断状态都要在卡片内部给出原因和下一步。
+${chartWarn.length ? `当前有 ${chartWarn.length} 个图表色与容器背景的对比度不足 3:1；调整后再用于小型数据标记、细线或相邻区域。` : '当前图表色均通过与容器背景的 3:1 图形对比度检查。'}
+
+## 7. CSS 变量
 以下变量与工作台实时预览使用同一份配置。生产中可按 16px 根字号换算为 rem。
 
 \`\`\`css
@@ -337,7 +444,7 @@ ${Object.entries(tokens(s))
 :focus-visible { outline: 2px solid var(--p-primary); outline-offset: 3px; }
 \`\`\`
 
-## 7. 可读性检查
+## 8. 可读性检查
 普通文字使用 4.5:1 作为对比度检查阈值；以下仅检查列出的配对，不代表整站无障碍认证。
 
 | 颜色配对 | 对比度 | 结果 |
@@ -350,9 +457,9 @@ ${checks(s)
   .join('\n')}
 
 ${warn.length ? `注意：当前 ${warn.length} 组配色尚未通过普通文字检查，请调整后用于相应场景。` : '以上配对均通过普通文字对比度检查。'}
-状态色、边框、图表及 hover 状态仍需在实际组件中结合背景验证。不得仅用颜色传达信息。
+状态色、边框、图表色及 hover 状态仍需在实际组件中结合背景验证。不得仅用颜色传达信息。
 
-## 8. 给 CodeBuddy 的执行要求
-请先读取本文件，再实现页面。将上述变量集中维护，所有页面及复用组件引用它们。不得自动替换成默认蓝紫渐变，不得添加无语义的彩色卡片或 Emoji 图标，不得自行修改字体层级。使用同一套线性图标库。完成后检查桌面和移动端、键盘焦点、表单反馈、溢出和对比度。遇到规范缺失时提出具体扩展建议，避免静默引入第二套样式。
+## 9. 给 CodeBuddy 的执行要求
+请先读取本文件，再实现页面。将上述变量集中维护，所有页面、复用组件与图表引用它们。不得自动替换成默认蓝紫渐变，不得让每张图自行生成色板，不得添加无语义的彩色卡片或 Emoji 图标，不得自行修改字体层级。使用同一套线性图标库。图表实现前先写明分析问题、指标口径、比较对象和适用图形；完成后检查桌面和移动端、键盘焦点、表单反馈、图表标签、Tooltip、空数据、溢出和对比度。遇到规范缺失时提出具体扩展建议，避免静默引入第二套样式。
 `;
 }

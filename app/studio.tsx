@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { flushSync } from 'react-dom';
 import { registerDesignTools } from '@/lib/webmcp';
+import { DataCharts } from '@/app/data-charts';
 import {
   ArrowDownToLine,
   ArrowRight,
@@ -28,6 +29,7 @@ import {
   CircleAlert,
   SlidersHorizontal,
   BookOpen,
+  ChartNoAxesCombined,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
@@ -41,12 +43,14 @@ import {
 import {
   roles,
   palettes,
+  chartPalettes,
   defaults,
   fonts,
   fontNames,
   typeSizes,
   tokens,
   checks,
+  chartChecks,
   markdown,
   sanitize,
   type Design,
@@ -57,6 +61,7 @@ const sections = [
   { id: 'type', label: '字体排版', icon: Type },
   { id: 'space', label: '布局间距', icon: Grid2X2 },
   { id: 'component', label: '组件风格', icon: MousePointer2 },
+  { id: 'data', label: '数据可视化', icon: ChartNoAxesCombined },
 ];
 function Choice({
   label,
@@ -243,6 +248,23 @@ export default function Studio() {
     setS((prev) => ({ ...prev, palette: p.name, colors: { ...p.colors } }));
     setToast(`已应用「${p.name}」，字体与布局保持当前设置`);
   }
+  function applyChartPalette(p: (typeof chartPalettes)[number]) {
+    setS((prev) => ({
+      ...prev,
+      chartPalette: p.name,
+      chartColors: [...p.colors],
+    }));
+    setToast(`已应用图表色板「${p.name}」`);
+  }
+  function chartColor(index: number, value: string) {
+    setS((prev) => ({
+      ...prev,
+      chartPalette: '自定义图表色板',
+      chartColors: prev.chartColors.map((color, i) =>
+        i === index ? value : color,
+      ),
+    }));
+  }
   function download() {
     const url = URL.createObjectURL(
       new Blob([markdown(s)], { type: 'text/markdown;charset=utf-8' }),
@@ -283,6 +305,8 @@ export default function Studio() {
   );
   const ts = typeSizes(s),
     results = checks(s),
+    chartResults = chartChecks(s),
+    chartFailed = chartResults.filter((item) => !item.pass).length,
     failed = results.filter(([, r]) => r < 4.5).length;
   return (
     <div className="app-shell">
@@ -357,6 +381,7 @@ export default function Studio() {
                 }
                 onClick={() => {
                   setSection(item.id);
+                  if (item.id === 'data') setScene('data');
                   setView('studio');
                 }}
               >
@@ -441,7 +466,10 @@ export default function Studio() {
               <section className="settings-panel">
                 <Tabs
                   value={section}
-                  onValueChange={(v) => setSection(String(v))}
+                  onValueChange={(v) => {
+                    setSection(String(v));
+                    if (v === 'data') setScene('data');
+                  }}
                 >
                   <TabsList className="editor-tabs" aria-label="规范分类">
                     {sections.map((item) => (
@@ -728,6 +756,121 @@ export default function Studio() {
                       </div>
                     </div>
                   </TabsContent>
+                  <TabsContent value="data">
+                    <div className="settings-content data-settings">
+                      <div className="section-title">
+                        <h2>数据可视化</h2>
+                        <span>DATA VISUALIZATION</span>
+                      </div>
+                      <p className="section-description">
+                        一张图只回答一个问题，所有图共用一套视觉语言。
+                      </p>
+                      <Choice
+                        label="图表色板"
+                        value={s.chartPalette}
+                        options={chartPalettes.map((p) => p.name)}
+                        onChange={(name) =>
+                          applyChartPalette(
+                            chartPalettes.find((p) => p.name === name)!,
+                          )
+                        }
+                      />
+                      <div className="chart-palette-editor">
+                        {s.chartColors.map((value, index) => (
+                          <label key={index}>
+                            <input
+                              type="color"
+                              value={value}
+                              aria-label={`图表色 ${index + 1}`}
+                              onChange={(e) =>
+                                chartColor(index, e.target.value.toUpperCase())
+                              }
+                            />
+                            <span>{index + 1}</span>
+                            <code>{value}</code>
+                          </label>
+                        ))}
+                      </div>
+                      <p className="palette-note">
+                        {chartPalettes.find((p) => p.name === s.chartPalette)
+                          ?.note ?? '自定义 · 请确保相邻系列容易区分'}
+                      </p>
+                      <div
+                        className={
+                          'chart-contrast-note ' +
+                          (chartFailed ? 'has-warning' : '')
+                        }
+                      >
+                        {chartFailed ? (
+                          <CircleAlert size={15} />
+                        ) : (
+                          <ShieldCheck size={15} />
+                        )}
+                        <span>
+                          {chartFailed
+                            ? `${chartFailed} 个颜色与卡片背景不足 3:1`
+                            : '6 个图表色均通过 3:1 图形对比度检查'}
+                        </span>
+                      </div>
+                      <div className="subheading status-heading">
+                        图表文字层级<span>全局统一</span>
+                      </div>
+                      <Range
+                        label="卡片标题"
+                        value={s.chartTitleSize}
+                        min={14}
+                        max={20}
+                        unit="px"
+                        onChange={(v) => update('chartTitleSize', v)}
+                      />
+                      <Range
+                        label="数据标签与说明"
+                        value={s.chartLabelSize}
+                        min={11}
+                        max={16}
+                        unit="px"
+                        onChange={(v) => update('chartLabelSize', v)}
+                      />
+                      <Range
+                        label="坐标轴与图例"
+                        value={s.chartAxisSize}
+                        min={10}
+                        max={14}
+                        unit="px"
+                        onChange={(v) => update('chartAxisSize', v)}
+                      />
+                      <div className="subheading status-heading">
+                        图表卡片<span>标题在左上，操作在右上</span>
+                      </div>
+                      <Range
+                        label="卡片内边距"
+                        value={s.chartCardPadding}
+                        min={16}
+                        max={32}
+                        step={4}
+                        unit="px"
+                        onChange={(v) => update('chartCardPadding', v)}
+                      />
+                      <Choice
+                        label="图例位置"
+                        value={s.chartLegend}
+                        options={['顶部左对齐', '顶部右对齐', '底部左对齐']}
+                        onChange={(v) => update('chartLegend', v)}
+                      />
+                      <Choice
+                        label="网格线"
+                        value={s.chartGrid}
+                        options={['仅横向', '横纵都有', '不显示']}
+                        onChange={(v) => update('chartGrid', v)}
+                      />
+                      <div className="tip">
+                        <ChartNoAxesCombined size={17} />
+                        <p>
+                          单序列优先使用品牌主色；多序列才使用分类色。正负状态沿用全局语义色，并同时保留文字或符号。
+                        </p>
+                      </div>
+                    </div>
+                  </TabsContent>
                 </Tabs>
                 <div className="settings-footer">
                   <ShieldCheck size={14} />
@@ -774,6 +917,10 @@ export default function Studio() {
                       <BookOpen size={14} />
                       内容页面
                     </TabsTrigger>
+                    <TabsTrigger value="data">
+                      <ChartNoAxesCombined size={14} />
+                      数据图表
+                    </TabsTrigger>
                   </TabsList>
                   <div className="preview-mat">
                     <div
@@ -794,7 +941,9 @@ export default function Studio() {
                             ? 'overview'
                             : scene === 'components'
                               ? 'components'
-                              : 'article'}
+                              : scene === 'data'
+                                ? 'data-visualization'
+                                : 'article'}
                         </span>
                         <span className="browser-caption">示例页面</span>
                       </div>
@@ -1087,6 +1236,9 @@ export default function Studio() {
                             </p>
                           </article>
                         </TabsContent>
+                        <TabsContent value="data">
+                          <DataCharts design={s} />
+                        </TabsContent>
                       </div>
                     </div>
                   </div>
@@ -1260,6 +1412,8 @@ export default function Studio() {
                     '5 级字体层级',
                     '间距与响应式规则',
                     '组件样式与交互状态',
+                    '图表文字、色板与卡片规范',
+                    '柱状、折线、饼状与桑基图规则',
                     '可复用 CSS 变量',
                     '可读性检查结果',
                     'CodeBuddy 执行要求',

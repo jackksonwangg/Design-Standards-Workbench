@@ -1909,6 +1909,103 @@ button:not(:disabled):hover {
 .document-summary > .text-button {
   margin: auto;
 }
+.document-gate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 20px;
+  padding: 15px 18px;
+  border: 1px solid #cfdfc9;
+  border-radius: 7px;
+  background: #f1f7ef;
+}
+.document-gate > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #57764c;
+}
+.document-gate strong {
+  display: block;
+  color: #385630;
+  font-size: 14px;
+  font-weight: 600;
+}
+.document-gate p {
+  margin-top: 4px;
+  color: #708267;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.document-gate > span {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid #b9d0b1;
+  border-radius: 999px;
+  color: #55744c;
+  font-size: 10px;
+}
+.enterprise-baseline {
+  overflow: hidden;
+  margin: 8px 0 22px;
+  border: 1px solid #dce6d4;
+  border-radius: 7px;
+  background: #fff;
+}
+.enterprise-baseline h3 {
+  padding: 12px 13px;
+  background: #f4f8f1;
+  color: #52654b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.enterprise-baseline p {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 13px;
+  border-top: 1px solid #edf1e9;
+  color: #85927d;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.enterprise-baseline svg {
+  flex: 0 0 auto;
+  width: 14px;
+  margin-top: 1px;
+  color: #719661;
+}
+.enterprise-baseline strong {
+  margin-right: 4px;
+  color: #5f7556;
+  font-weight: 600;
+}
+.delivery-gate-card {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #cadcc3;
+  border-radius: 7px;
+  background: #eff6ed;
+  color: #5d814f;
+}
+.delivery-gate-card > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.delivery-gate-card h3 {
+  color: #45663a;
+  font-size: 13px;
+  font-weight: 600;
+}
+.delivery-gate-card p {
+  margin-top: 5px;
+  color: #6d8264;
+  font-size: 11px;
+  line-height: 1.7;
+}
 .help-panel {
   position: relative;
   padding: 25px;
@@ -2515,6 +2612,9 @@ button:not(:disabled):hover {
   color: #946e2f;
 }
 .data-settings .range-field {
+  margin: 21px 0;
+}
+.governance-settings .range-field {
   margin: 21px 0;
 }
 .data-preview-page {

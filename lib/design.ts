@@ -32,6 +32,10 @@ export type Design = {
   chartCardPadding: number;
   chartLegend: string;
   chartGrid: string;
+  pageGrid: string;
+  contentWidth: number;
+  tableRowHeight: number;
+  motionDuration: number;
 };
 const semantic = { success: '#087A5B', warning: '#9A5B00', danger: '#C13F55' };
 export const palettes = [
@@ -355,6 +359,10 @@ export const defaults: Design = {
   chartCardPadding: 20,
   chartLegend: '顶部左对齐',
   chartGrid: '仅横向',
+  pageGrid: '12 列',
+  contentWidth: 1440,
+  tableRowHeight: 44,
+  motionDuration: 160,
 };
 export function luminance(hex: string) {
   const v = hex
@@ -412,6 +420,10 @@ export function tokens(s: Design): Record<string, string> {
     '--p-gap': `${s.unit * 4}px`,
     '--p-radius': `${s.radius}px`,
     '--p-control': `${s.density === '紧凑' ? 32 : s.density === '宽松' ? 44 : 38}px`,
+    '--p-grid-columns': s.pageGrid.startsWith('8') ? '8' : '12',
+    '--p-content-max': `${s.contentWidth}px`,
+    '--p-table-row': `${s.tableRowHeight}px`,
+    '--p-motion': `${s.motionDuration}ms`,
     '--p-shadow':
       s.shadow === '无阴影'
         ? 'none'
@@ -530,6 +542,18 @@ export function sanitize(value: unknown): Design | null {
     chartGrid: ['仅横向', '横纵都有', '不显示'].includes(v.chartGrid)
       ? v.chartGrid
       : defaults.chartGrid,
+    pageGrid: ['8 列', '12 列'].includes(v.pageGrid)
+      ? v.pageGrid
+      : defaults.pageGrid,
+    contentWidth: [1200, 1440, 1600].includes(v.contentWidth)
+      ? v.contentWidth
+      : defaults.contentWidth,
+    tableRowHeight: [36, 40, 44, 48, 52, 56].includes(v.tableRowHeight)
+      ? v.tableRowHeight
+      : defaults.tableRowHeight,
+    motionDuration: [0, 160, 240].includes(v.motionDuration)
+      ? v.motionDuration
+      : defaults.motionDuration,
   };
 }
 export function markdown(s: Design) {
@@ -539,6 +563,26 @@ export function markdown(s: Design) {
   return `# ${s.name.replace(/[\r\n#]/g, ' ').trim() || '我的设计规范'}
 
 > 由基调生成。此文件是本项目所有页面的统一视觉约束；请先阅读，再生成或修改 UI。
+
+## 0. 变更门禁（必须执行）
+
+> 本文件是前端与设计变更的执行契约，不是交付后的参考资料。任何 Agent、开发者或设计师在创建、修改、重构页面、组件、样式或图表前，必须完整阅读本文件并遵循以下顺序；未完成任一步，不得开始实现。
+
+1. **先读规范**：确认本次涉及的颜色、排版、布局、组件、数据展示与可访问性规则。
+2. **先写变更计划**：在代码前用 3–5 行说明“改什么、复用哪些 Token/组件、可能缺什么规范”。
+3. **只复用，不临时造规则**：优先引用本文档中的变量和组件规则；禁止为单个页面新建零散 HEX、字号、间距、圆角、阴影或图表色板。
+4. **规范缺失时先补文档**：需要新 Token、组件状态、页面模式或图表规则时，先提出补充建议，更新规范与预览，再改业务代码；不得静默引入第二套样式。
+5. **完成前验收**：逐项检查桌面与移动端、键盘焦点、加载/空/错/无权限状态、文本和图形对比度、表格溢出、图表标签与数据口径；最后报告本次复用和新增的规范项。
+
+每次交付必须附带以下声明：
+
+\`\`\`text
+已阅读 DESIGN.md。
+本次范围：…
+复用的 Token / 组件：…
+新增或补充的规范：无 / …
+已检查：响应式、状态反馈、键盘焦点、对比度、数据口径。
+\`\`\`
 
 ## 1. 设计原则
 - 使用语义变量，不在各个页面单独定义颜色、字号、圆角与间距。
@@ -575,6 +619,7 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - 密度：${s.density}；容器内边距：${tokens(s)['--p-padding']}；区块间距：${s.unit * 4}px；控件最小高度：${tokens(s)['--p-control']}。
 - 桌面采用可伸缩内容区；小于 768px 时多列堆叠，表格在自身容器内横向滚动，禁止页面整体溢出。
 - 移动端交互目标至少 44px；放大文字后允许换行和布局重排。
+- 页面采用 ${s.pageGrid}响应式网格，内容最大宽度 ${s.contentWidth}px。桌面保留导航和内容层级；窄屏优先保留任务主路径，侧栏可收起但当前位置必须清楚。
 
 ## 5. 组件风格与状态
 - 统一圆角：${s.radius}px；边框：1px solid var(--p-border)；阴影：${s.shadow}。
@@ -585,7 +630,15 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - Error：错误文字靠近输入项；Empty：说明原因和下一步；Success：明确反馈结果，不仅变色。
 - 动效仅用于状态反馈，时长 160ms，尊重 prefers-reduced-motion。
 
-## 6. 数据可视化规范
+## 6. 企业页面、数据与反馈
+- 页面模式必须从“看板、列表、详情、创建/编辑”中选择，并明确本页的主要任务和主要操作；不要把多种任务堆到同一首屏。
+- 列表与表格：默认行高 ${s.tableRowHeight}px；表头固定语义和对齐方式，数值右对齐、文本左对齐、状态居中；提供筛选、排序、分页或明确的结果数量。列过多时只允许表格容器横向滚动，不允许整页横向溢出。
+- 状态基线：异步区域必须具备加载、空数据、错误、无权限四种状态。加载优先用与最终布局等宽高的骨架；空数据说明原因和下一步；错误说明可恢复动作；无权限说明如何申请。
+- 操作反馈：保存、提交、导入等动作必须有进行中、成功和失败反馈；危险操作在执行前二次确认，成功后尽可能提供撤销；不使用只靠颜色的反馈。
+- 数据表达：金额、百分比、日期、时区、单位和小数位在同一页面保持一致；未知值显示“—”并说明原因，禁止用 0 冒充缺失数据。敏感字段按权限脱敏，导出、复制与批量操作应记录或提示范围。
+- 动效：默认 ${s.motionDuration === 0 ? '不使用动效' : `${s.motionDuration}ms`}；只用于解释状态或层级变化，不以循环、闪烁或位移吸引注意。系统开启减少动效时必须静止。
+
+## 7. 数据可视化规范
 - 图表先回答一个问题，再选择图形。标题直接写清指标或结论，避免“数据分析”“趋势图”一类空泛标题。
 - 图表卡片：标题位于左上角，字号 ${s.chartTitleSize}px、字重 600；副标题与口径说明字号 ${s.chartLabelSize}px；坐标轴、刻度、图例和数据来源字号 ${s.chartAxisSize}px。
 - 卡片内边距：${s.chartCardPadding}px；标题区、图例区、绘图区和来源区保持稳定顺序。标题可换行，筛选或操作放在标题区右侧。
@@ -609,7 +662,7 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 图表不能只用颜色传达信息：同时使用直接标签、线型、节点名称或数值。Tooltip 保留系列名、原始值、单位与时间；数字统一千分位和小数位。加载、空数据、错误、数据截断状态都要在卡片内部给出原因和下一步。
 ${chartWarn.length ? `当前有 ${chartWarn.length} 个图表色与容器背景的对比度不足 3:1；调整后再用于小型数据标记、细线或相邻区域。` : '当前图表色均通过与容器背景的 3:1 图形对比度检查。'}
 
-## 7. CSS 变量
+## 8. CSS 变量
 以下变量与工作台实时预览使用同一份配置。生产中可按 16px 根字号换算为 rem。
 
 \`\`\`css
@@ -630,7 +683,7 @@ ${Object.entries(tokens(s))
 :focus-visible { outline: 2px solid var(--p-primary); outline-offset: 3px; }
 \`\`\`
 
-## 8. 可读性检查
+## 9. 可读性检查
 普通文字使用 4.5:1 作为对比度检查阈值；以下仅检查列出的配对，不代表整站无障碍认证。
 
 | 颜色配对 | 对比度 | 结果 |
@@ -645,7 +698,9 @@ ${checks(s)
 ${warn.length ? `注意：当前 ${warn.length} 组配色尚未通过普通文字检查，请调整后用于相应场景。` : '以上配对均通过普通文字对比度检查。'}
 状态色、边框、图表色及 hover 状态仍需在实际组件中结合背景验证。不得仅用颜色传达信息。
 
-## 9. 给 CodeBuddy 的执行要求
-请先读取本文件，再实现页面。将上述变量集中维护，所有页面、复用组件与图表引用它们。不得自动替换成默认蓝紫渐变，不得让每张图自行生成色板，不得添加无语义的彩色卡片或 Emoji 图标，不得自行修改字体层级。使用同一套线性图标库。图表实现前先写明分析问题、指标口径、比较对象和适用图形；完成后检查桌面和移动端、键盘焦点、表单反馈、图表标签、Tooltip、空数据、溢出和对比度。遇到规范缺失时提出具体扩展建议，避免静默引入第二套样式。
+## 10. 给 CodeBuddy 与其他 Agent 的执行要求
+开始任何前端或设计任务前，先执行本文件“0. 变更门禁”。这是强制流程，不能以“改动很小”“已有样式”“赶时间”为由跳过。将上述变量集中维护，所有页面、复用组件与图表引用它们。不得自动替换成默认蓝紫渐变，不得让每张图自行生成色板，不得添加无语义的彩色卡片或 Emoji 图标，不得自行修改字体层级。
+
+每次改动前，Agent 必须先输出范围、复用 Token/组件和待补规范；每次改动后，必须输出验收结果和实际影响的 Token/组件。若任务涉及图表，先写明分析问题、指标口径、比较对象和适用图形；若涉及表格或业务流程，先说明页面模式、空/错/无权限状态与危险操作反馈。遇到规范缺失时，提出具体扩展建议，先更新本文件与预览，再改代码。
 `;
 }

@@ -62,6 +62,7 @@ const sections = [
   { id: 'space', label: '布局间距', icon: Grid2X2 },
   { id: 'component', label: '组件风格', icon: MousePointer2 },
   { id: 'data', label: '数据可视化', icon: ChartNoAxesCombined },
+  { id: 'governance', label: '交付治理', icon: ShieldCheck },
 ];
 function Choice({
   label,
@@ -1028,6 +1029,99 @@ export default function Studio() {
                       </div>
                     </div>
                   </TabsContent>
+                  <TabsContent value="governance">
+                    <div className="settings-content governance-settings">
+                      <div className="section-title">
+                        <h2>企业交付</h2>
+                        <span>GOVERNANCE</span>
+                      </div>
+                      <p className="section-description">
+                        把视觉选择变成可执行的规则，让每一次改动都可追溯、可复用。
+                      </p>
+                      <Choice
+                        label="响应式页面网格"
+                        value={s.pageGrid}
+                        options={['12 列', '8 列']}
+                        onChange={(v) => update('pageGrid', v)}
+                      />
+                      <Choice
+                        label="桌面内容最大宽度"
+                        value={`${s.contentWidth}px`}
+                        options={['1200px', '1440px', '1600px']}
+                        onChange={(v) =>
+                          update('contentWidth', Number.parseInt(v, 10))
+                        }
+                      />
+                      <Range
+                        label="列表与表格行高"
+                        value={s.tableRowHeight}
+                        min={36}
+                        max={56}
+                        step={4}
+                        unit="px"
+                        onChange={(v) => update('tableRowHeight', v)}
+                      />
+                      <Choice
+                        label="状态动效时长"
+                        value={
+                          s.motionDuration === 0
+                            ? '关闭'
+                            : `${s.motionDuration}ms`
+                        }
+                        options={['关闭', '160ms', '240ms']}
+                        onChange={(v) =>
+                          update(
+                            'motionDuration',
+                            v === '关闭' ? 0 : Number.parseInt(v, 10),
+                          )
+                        }
+                      />
+                      <div className="enterprise-baseline">
+                        <h3>不可跳过的企业状态</h3>
+                        <p>
+                          <Check />
+                          <span>
+                            <strong>加载</strong> 与最终布局同尺寸的骨架
+                          </span>
+                        </p>
+                        <p>
+                          <Check />
+                          <span>
+                            <strong>空数据</strong> 说明原因，并给出下一步
+                          </span>
+                        </p>
+                        <p>
+                          <Check />
+                          <span>
+                            <strong>错误与无权限</strong>{' '}
+                            提供可恢复操作或申请路径
+                          </span>
+                        </p>
+                        <p>
+                          <Check />
+                          <span>
+                            <strong>危险动作</strong> 确认后给出可撤销反馈
+                          </span>
+                        </p>
+                      </div>
+                      <div className="delivery-gate-card">
+                        <ShieldCheck size={18} />
+                        <div>
+                          <h3>Agent 变更门禁</h3>
+                          <p>
+                            先完整读 DESIGN.md，再写代码；只复用既有 Token
+                            和组件。遇到缺口，先补规范与预览，再进入开发。
+                          </p>
+                        </div>
+                      </div>
+                      <div className="tip">
+                        <ShieldCheck size={17} />
+                        <p>
+                          交付时必须说明：本次范围、复用项、补充的规范，以及响应式、状态、焦点、对比度和数据口径的检查结果。
+                        </p>
+                      </div>
+                    </div>
+                  </TabsContent>
                 </Tabs>
                 <div className="settings-footer">
                   <ShieldCheck size={14} />
@@ -1548,14 +1642,26 @@ export default function Studio() {
                 <div>
                   <h1>让设计有据可依。</h1>
                   <p>
-                    这份规范与你的设置保持同步，直接交给 CodeBuddy
-                    或其他编码工具。
+                    这不是交付后的说明书。每次前端或设计变更都先读它，再开始修改。
                   </p>
                 </div>
                 <button className="btn" onClick={copy}>
                   <Copy size={16} />
                   复制全文
                 </button>
+              </div>
+              <div className="document-gate">
+                <div>
+                  <ShieldCheck size={19} />
+                  <div>
+                    <strong>先读规范，再改前端</strong>
+                    <p>
+                      页面、组件、颜色、字体、布局和图表都必须先从 DESIGN.md
+                      找到依据；没有规则时先补规则。
+                    </p>
+                  </div>
+                </div>
+                <span>变更门禁</span>
               </div>
               <div className="document-grid">
                 <div className="markdown-panel">
@@ -1567,13 +1673,15 @@ export default function Studio() {
                   <pre tabIndex={0}>{markdown(s)}</pre>
                 </div>
                 <aside className="document-summary">
-                  <h2>文档包含</h2>
+                  <h2>交付清单</h2>
                   {[
+                    '强制变更门禁与交付声明',
                     '设计原则与使用边界',
                     '9 个语义颜色',
                     '5 级字体层级',
-                    '间距与响应式规则',
+                    '页面网格、内容宽度与间距',
                     '组件样式与交互状态',
+                    '表格密度与企业页面状态',
                     '图表文字、色板与卡片规范',
                     '柱状、折线、饼状与桑基图规则',
                     '可复用 CSS 变量',

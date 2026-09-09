@@ -193,6 +193,129 @@ function ColorField({
     </div>
   );
 }
+function PalettePagePreview({ design }: { design: Design }) {
+  const active = palettes.find((palette) => palette.name === design.palette);
+  return (
+    <section className="palette-preview-panel" aria-label="当前配色页面预览">
+      <div className="palette-preview-heading">
+        <div>
+          <span>页面试色</span>
+          <strong>{design.palette}</strong>
+        </div>
+        <p>{active?.mood ?? '自定义 · 实时预览'}</p>
+      </div>
+      <div
+        className="palette-page-preview"
+        style={tokens(design) as CSSProperties}
+      >
+        <header>
+          <div className="palette-preview-brand">
+            <Layers size={14} />
+            <b>Northstar</b>
+          </div>
+          <nav aria-label="模拟页面顶部导航">
+            <span>项目</span>
+            <span>报表</span>
+            <i>NW</i>
+          </nav>
+        </header>
+        <div className="palette-page-body">
+          <aside>
+            <small>工作空间</small>
+            <strong>
+              <LayoutDashboard size={13} />
+              业务概览
+            </strong>
+            <span>
+              <Layers size={13} />
+              我的项目
+            </span>
+            <span>
+              <ChartNoAxesCombined size={13} />
+              数据分析
+            </span>
+            <span>
+              <FileText size={13} />
+              工作报告
+            </span>
+          </aside>
+          <div className="palette-page-content">
+            <div className="palette-preview-title">
+              <div>
+                <small>业务概览 / 本周</small>
+                <h2>项目运行概览</h2>
+                <p>关键进展、任务节奏与风险状态</p>
+              </div>
+              <span className="palette-preview-action">
+                <Plus size={12} />
+                新建项目
+              </span>
+            </div>
+            <div className="palette-preview-stats">
+              <article>
+                <span>进行中项目</span>
+                <strong>12</strong>
+                <small className="positive">较上周 +2</small>
+              </article>
+              <article>
+                <span>任务完成率</span>
+                <strong>86%</strong>
+                <small className="positive">保持稳定</small>
+              </article>
+              <article>
+                <span>待处理风险</span>
+                <strong>3</strong>
+                <small className="warning">今日需关注</small>
+              </article>
+            </div>
+            <div className="palette-preview-grid">
+              <article className="palette-preview-chart">
+                <div>
+                  <strong>每周任务完成量</strong>
+                  <span>过去 7 天</span>
+                </div>
+                <div className="palette-preview-bars" aria-hidden="true">
+                  {[46, 68, 54, 83, 72, 91, 63].map((value, index) => (
+                    <i key={index} style={{ height: `${value}%` }} />
+                  ))}
+                </div>
+                <div className="palette-preview-axis">
+                  <span>一</span>
+                  <span>二</span>
+                  <span>三</span>
+                  <span>四</span>
+                  <span>五</span>
+                  <span>六</span>
+                  <span>日</span>
+                </div>
+              </article>
+              <article className="palette-preview-tasks">
+                <div>
+                  <strong>近期任务</strong>
+                  <span>查看全部</span>
+                </div>
+                {[
+                  ['设计规范校准', '进行中'],
+                  ['数据看板评审', '待确认'],
+                  ['组件文档整理', '已完成'],
+                ].map(([name, status], index) => (
+                  <p key={name}>
+                    <i className={`task-dot task-dot-${index}`} />
+                    <span>{name}</span>
+                    <small>{status}</small>
+                  </p>
+                ))}
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="palette-preview-note">
+        点击左侧任意配色，页面背景、卡片、文字、主按钮和状态色会一起更新。
+      </p>
+    </section>
+  );
+}
 export default function Studio() {
   const [s, setS] = useState<Design>(defaults),
     [ready, setReady] = useState(false),
@@ -1361,56 +1484,61 @@ export default function Studio() {
                   <ArrowRight size={16} />
                 </button>
               </div>
-              <div className="palette-gallery">
-                {palettes.map((p) => (
-                  <button
-                    key={p.name}
-                    className={
-                      'palette-card ' + (s.palette === p.name ? 'selected' : '')
-                    }
-                    onClick={() => applyPalette(p)}
-                  >
-                    <div
-                      className="large-palette"
-                      style={{ background: p.colors.background }}
+              <div className="inspiration-workbench">
+                <div className="palette-gallery" aria-label="配色方案列表">
+                  {palettes.map((p) => (
+                    <button
+                      key={p.name}
+                      className={
+                        'palette-card ' +
+                        (s.palette === p.name ? 'selected' : '')
+                      }
+                      aria-pressed={s.palette === p.name}
+                      onClick={() => applyPalette(p)}
                     >
                       <div
-                        className="palette-type"
-                        style={{ color: p.colors.text }}
+                        className="large-palette"
+                        style={{ background: p.colors.background }}
                       >
-                        Aa
-                        <span style={{ color: p.colors.primary }}>
-                          有序之美
-                        </span>
+                        <div
+                          className="palette-type"
+                          style={{ color: p.colors.text }}
+                        >
+                          Aa
+                          <span style={{ color: p.colors.primary }}>
+                            有序之美
+                          </span>
+                        </div>
+                        <div className="palette-blocks">
+                          {['primary', 'text', 'muted', 'border'].map((k) => (
+                            <i
+                              key={k}
+                              style={{ background: p.colors[k as ColorKey] }}
+                            />
+                          ))}
+                        </div>
                       </div>
-                      <div className="palette-blocks">
-                        {['primary', 'text', 'muted', 'border'].map((k) => (
-                          <i
-                            key={k}
-                            style={{ background: p.colors[k as ColorKey] }}
-                          />
-                        ))}
+                      <div className="palette-info">
+                        <div>
+                          <h2>
+                            {p.name}
+                            <span>{p.en}</span>
+                          </h2>
+                          <p>{p.mood}</p>
+                        </div>
+                        {s.palette === p.name ? (
+                          <span className="applied">
+                            <Check size={14} />
+                            已应用
+                          </span>
+                        ) : (
+                          <ArrowUpRight size={18} />
+                        )}
                       </div>
-                    </div>
-                    <div className="palette-info">
-                      <div>
-                        <h2>
-                          {p.name}
-                          <span>{p.en}</span>
-                        </h2>
-                        <p>{p.mood}</p>
-                      </div>
-                      {s.palette === p.name ? (
-                        <span className="applied">
-                          <Check size={14} />
-                          已应用
-                        </span>
-                      ) : (
-                        <ArrowUpRight size={18} />
-                      )}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
+                <PalettePagePreview design={s} />
               </div>
             </section>
           )}

@@ -361,7 +361,10 @@ export default function Studio() {
               onClick={() => setView('inspiration')}
             >
               <Sparkles />
-              配色灵感<span className="count">08</span>
+              配色灵感
+              <span className="count">
+                {String(palettes.length).padStart(2, '0')}
+              </span>
             </button>
             <button
               className={'side-item ' + (view === 'document' ? 'active' : '')}
@@ -775,6 +778,37 @@ export default function Studio() {
                           )
                         }
                       />
+                      <ul
+                        className="chart-palette-gallery"
+                        aria-label="图表色板快速选择"
+                      >
+                        {chartPalettes.map((palette) => (
+                          <li key={palette.name}>
+                            <button
+                              type="button"
+                              className={
+                                'chart-palette-option ' +
+                                (s.chartPalette === palette.name
+                                  ? 'selected'
+                                  : '')
+                              }
+                              aria-label={`应用图表色板 ${palette.name}`}
+                              aria-pressed={s.chartPalette === palette.name}
+                              onClick={() => applyChartPalette(palette)}
+                            >
+                              <span>{palette.name}</span>
+                              <i>
+                                {palette.colors.map((color) => (
+                                  <b
+                                    key={color}
+                                    style={{ background: color }}
+                                  />
+                                ))}
+                              </i>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                       <div className="chart-palette-editor">
                         {s.chartColors.map((value, index) => (
                           <label key={index}>

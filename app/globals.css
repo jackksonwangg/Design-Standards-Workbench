@@ -2082,6 +2082,60 @@ button:not(:disabled):hover {
 }
 
 /* Data visualization specification */
+.chart-palette-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: -8px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+.chart-palette-gallery li {
+  min-width: 0;
+}
+.chart-palette-option {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 8px 9px;
+  border: 1px solid #e2e6dd;
+  border-radius: 6px;
+  background: #fff;
+  color: #41483d;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+.chart-palette-option:hover {
+  border-color: #aeb9a4;
+  background: #fbfcfa;
+}
+.chart-palette-option.selected {
+  border-color: #3f6f5f;
+  box-shadow: 0 0 0 1px #3f6f5f;
+}
+.chart-palette-option > span {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chart-palette-option > i {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  height: 11px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.chart-palette-option > i b {
+  display: block;
+}
 .chart-palette-editor {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

@@ -33,120 +33,232 @@ export type Design = {
   chartLegend: string;
   chartGrid: string;
 };
-const semantic = { success: '#247351', warning: '#9A650C', danger: '#C13E3E' };
+const semantic = { success: '#087A5B', warning: '#9A5B00', danger: '#C13F55' };
 export const palettes = [
   {
-    name: '松间白',
-    en: 'Pine & Paper',
-    mood: '沉静 · 清晰',
+    name: '晴空蓝',
+    en: 'Clear Sky',
+    mood: '清爽 · 可信',
     colors: {
-      primary: '#356859',
-      background: '#F5F6F3',
+      primary: '#2563EB',
+      background: '#F6F9FF',
       surface: '#FFFFFF',
-      text: '#24342D',
-      muted: '#68746C',
-      border: '#DFE5DF',
+      text: '#172033',
+      muted: '#5F6B7C',
+      border: '#DCE6F5',
       ...semantic,
     },
   },
   {
-    name: '落日来信',
-    en: 'Terracotta',
-    mood: '温暖 · 人文',
+    name: '海盐青',
+    en: 'Sea Salt',
+    mood: '洁净 · 专注',
     colors: {
-      primary: '#A74B35',
-      background: '#FAF6F1',
+      primary: '#087A72',
+      background: '#F2FBF9',
       surface: '#FFFFFF',
-      text: '#392D29',
-      muted: '#7C6B63',
-      border: '#E8DED4',
+      text: '#123B39',
+      muted: '#5D706E',
+      border: '#D5EDEA',
       ...semantic,
     },
   },
   {
-    name: '深海航线',
-    en: 'Deep Atlantic',
-    mood: '理性 · 专注',
+    name: '薄荷叶',
+    en: 'Mint Leaf',
+    mood: '自然 · 轻盈',
     colors: {
-      primary: '#285B87',
-      background: '#F2F5F8',
+      primary: '#2F735C',
+      background: '#F4FAF7',
       surface: '#FFFFFF',
-      text: '#213245',
-      muted: '#647588',
-      border: '#D9E2EB',
+      text: '#18382E',
+      muted: '#60736C',
+      border: '#D9EAE2',
       ...semantic,
     },
   },
   {
-    name: '墨与留白',
-    en: 'Ink & Space',
-    mood: '克制 · 纯粹',
+    name: '冰川青',
+    en: 'Glacier Cyan',
+    mood: '明净 · 理性',
     colors: {
-      primary: '#303033',
-      background: '#F5F5F5',
+      primary: '#08758A',
+      background: '#F1FAFC',
       surface: '#FFFFFF',
-      text: '#242426',
-      muted: '#707075',
-      border: '#E0E0E3',
+      text: '#153A43',
+      muted: '#5B7177',
+      border: '#D4EAEF',
       ...semantic,
     },
   },
   {
-    name: '暮色葡萄',
-    en: 'After Hours',
-    mood: '独特 · 柔和',
+    name: '矢车菊',
+    en: 'Cornflower',
+    mood: '现代 · 开阔',
     colors: {
-      primary: '#71518A',
-      background: '#F7F4F9',
+      primary: '#4F63C7',
+      background: '#F5F7FF',
       surface: '#FFFFFF',
-      text: '#342B3C',
-      muted: '#796C83',
-      border: '#E5DDEB',
+      text: '#242B50',
+      muted: '#656C86',
+      border: '#DEE2F5',
       ...semantic,
     },
   },
   {
-    name: '柠檬书页',
-    en: 'Citrus Notes',
-    mood: '明快 · 自由',
+    name: '雨后紫',
+    en: 'After Rain',
+    mood: '柔和 · 清晰',
     colors: {
-      primary: '#6D691D',
-      background: '#FAFAEF',
+      primary: '#6D51B5',
+      background: '#F8F5FF',
       surface: '#FFFFFF',
-      text: '#333526',
-      muted: '#70725E',
-      border: '#E4E5D1',
+      text: '#342850',
+      muted: '#70677F',
+      border: '#E7DFF4',
       ...semantic,
     },
   },
   {
-    name: '玫瑰砂岩',
-    en: 'Rose Stone',
-    mood: '细腻 · 亲切',
+    name: '鸢尾蓝',
+    en: 'Blue Iris',
+    mood: '稳健 · 灵动',
     colors: {
-      primary: '#A34765',
-      background: '#FAF4F5',
+      primary: '#3858B8',
+      background: '#F4F6FD',
       surface: '#FFFFFF',
-      text: '#3C2D33',
-      muted: '#816970',
-      border: '#E9DDE1',
+      text: '#202D51',
+      muted: '#626D86',
+      border: '#DCE2F1',
       ...semantic,
     },
   },
   {
-    name: '午夜电台',
-    en: 'Midnight Radio',
-    mood: '深邃 · 夜间',
+    name: '樱花露',
+    en: 'Sakura Dew',
+    mood: '轻柔 · 亲和',
     colors: {
-      primary: '#9EB9F6',
-      background: '#181C24',
-      surface: '#222834',
-      text: '#EEF1F7',
-      muted: '#A4AEBD',
-      border: '#454F60',
-      success: '#83C5A4',
-      warning: '#E3BF72',
-      danger: '#F19494',
+      primary: '#B33F70',
+      background: '#FFF6FA',
+      surface: '#FFFFFF',
+      text: '#49263A',
+      muted: '#7B6671',
+      border: '#F0DDE7',
+      ...semantic,
+    },
+  },
+  {
+    name: '珊瑚汽水',
+    en: 'Coral Soda',
+    mood: '明快 · 有温度',
+    colors: {
+      primary: '#C34E45',
+      background: '#FFF7F5',
+      surface: '#FFFFFF',
+      text: '#482B29',
+      muted: '#7A6966',
+      border: '#F0DFDB',
+      ...semantic,
+    },
+  },
+  {
+    name: '杏桃光',
+    en: 'Apricot Light',
+    mood: '温暖 · 通透',
+    colors: {
+      primary: '#A6531F',
+      background: '#FFF9F3',
+      surface: '#FFFFFF',
+      text: '#442F24',
+      muted: '#776A62',
+      border: '#EFE2D6',
+      ...semantic,
+    },
+  },
+  {
+    name: '金盏花',
+    en: 'Marigold',
+    mood: '活力 · 清爽',
+    colors: {
+      primary: '#8C6500',
+      background: '#FFFBEE',
+      surface: '#FFFFFF',
+      text: '#3B3421',
+      muted: '#716C5C',
+      border: '#ECE5C9',
+      ...semantic,
+    },
+  },
+  {
+    name: '青柠叶',
+    en: 'Lime Leaf',
+    mood: '新鲜 · 有序',
+    colors: {
+      primary: '#537315',
+      background: '#F8FBEF',
+      surface: '#FFFFFF',
+      text: '#303A20',
+      muted: '#68715B',
+      border: '#E2EACF',
+      ...semantic,
+    },
+  },
+  {
+    name: '湖心绿',
+    en: 'Lake Green',
+    mood: '安定 · 清透',
+    colors: {
+      primary: '#16725E',
+      background: '#F2FAF7',
+      surface: '#FFFFFF',
+      text: '#183B32',
+      muted: '#5E736D',
+      border: '#D6EAE3',
+      ...semantic,
+    },
+  },
+  {
+    name: '海湾蓝',
+    en: 'Bay Blue',
+    mood: '专业 · 轻快',
+    colors: {
+      primary: '#1767A2',
+      background: '#F3F9FD',
+      surface: '#FFFFFF',
+      text: '#19374D',
+      muted: '#60717E',
+      border: '#D8E7F0',
+      ...semantic,
+    },
+  },
+  {
+    name: '石墨纸',
+    en: 'Graphite Paper',
+    mood: '克制 · 中性',
+    colors: {
+      primary: '#374151',
+      background: '#F7F8FA',
+      surface: '#FFFFFF',
+      text: '#202631',
+      muted: '#667080',
+      border: '#E0E4EA',
+      ...semantic,
+    },
+  },
+  {
+    name: '深夜蓝',
+    en: 'Night Blue',
+    mood: '沉浸 · 夜间',
+    colors: {
+      primary: '#8FB7FF',
+      background: '#111827',
+      surface: '#1B2433',
+      text: '#F3F7FD',
+      muted: '#AAB6C7',
+      border: '#3B475A',
+      success: '#65C9A2',
+      warning: '#E5B85C',
+      danger: '#F18494',
     },
   },
 ];
@@ -162,19 +274,64 @@ export const fontNames: Record<string, string> = {
 };
 export const chartPalettes = [
   {
-    name: '清晰分类',
-    note: '色盲友好 · 适合离散类别',
-    colors: ['#0072B2', '#B66800', '#00875F', '#A64E87', '#C44A1B', '#247C9E'],
+    name: '清泉分类',
+    note: '高辨识分类 · 通用运营看板',
+    colors: ['#2563EB', '#07887A', '#7656D8', '#CC4F74', '#B85C00', '#3F6F8F'],
   },
   {
-    name: '克制商务',
-    note: '低饱和 · 适合运营看板',
-    colors: ['#3B657A', '#6D8D78', '#B28B55', '#8C6F8F', '#B5665D', '#6F7E9D'],
+    name: '海岛清风',
+    note: '蓝青为主 · 清爽数据产品',
+    colors: ['#0B74B8', '#008A78', '#5865C7', '#B34F8C', '#C26018', '#4B7180'],
   },
   {
-    name: '单色层级',
-    note: '同一指标的强弱与顺序',
-    colors: ['#174F7A', '#2F6E9D', '#4E8AB3', '#75A5C8', '#9FC1D9', '#CADDE9'],
+    name: '果园晴日',
+    note: '自然鲜明 · 业务类别较多',
+    colors: ['#2F7D32', '#007F8B', '#6E59A8', '#C23E55', '#A76800', '#3A6EA5'],
+  },
+  {
+    name: '春野花束',
+    note: '清新多彩 · 标签与图形并用',
+    colors: ['#187B65', '#4D7C0F', '#5065B5', '#A84C8A', '#C2563B', '#1D7A99'],
+  },
+  {
+    name: '北欧晨光',
+    note: '克制柔和 · 管理驾驶舱',
+    colors: ['#3468C0', '#16867A', '#6658B6', '#B24E6B', '#AF6412', '#486A78'],
+  },
+  {
+    name: '晴空信号',
+    note: '清亮强调 · 实时监控与告警',
+    colors: ['#006EB8', '#087F7B', '#5368D4', '#C14678', '#AC5D00', '#3C748F'],
+  },
+  {
+    name: '蓝色层级',
+    note: '顺序色板 · 同一指标由深到浅',
+    colors: ['#0B4F8A', '#1768AC', '#2C7FB8', '#438FC1', '#4B8EBB', '#4F96C2'],
+  },
+  {
+    name: '青色层级',
+    note: '顺序色板 · 密度、进度与强弱',
+    colors: ['#075E59', '#08766F', '#148C82', '#2C958A', '#37978C', '#42998E'],
+  },
+  {
+    name: '紫色层级',
+    note: '顺序色板 · 同类指标分层',
+    colors: ['#4C3A86', '#5C46A0', '#6D54B8', '#7E65C8', '#8A72CB', '#947DD0'],
+  },
+  {
+    name: '冷暖分歧',
+    note: '分歧色板 · 围绕基准值比较',
+    colors: ['#2458A6', '#3478BE', '#4B94B9', '#C76D5E', '#B84E52', '#93343D'],
+  },
+  {
+    name: '盈亏分歧',
+    note: '正负语义 · 必须同时显示符号与数值',
+    colors: ['#0B6B57', '#17836A', '#4C9A88', '#DC765F', '#C85555', '#A83D48'],
+  },
+  {
+    name: '中性强调',
+    note: '多数降噪 · 单一重点高亮',
+    colors: ['#2F66C7', '#52657E', '#5F6F82', '#6C7988', '#75818E', '#7E8995'],
   },
 ] as const;
 export const defaults: Design = {
@@ -289,6 +446,21 @@ export function chartChecks(s: Design) {
     pass: contrast(color, s.colors.surface) >= 3,
   }));
 }
+const legacyPaletteMap: Record<string, string> = {
+  松间白: '湖心绿',
+  落日来信: '珊瑚汽水',
+  深海航线: '海湾蓝',
+  墨与留白: '石墨纸',
+  暮色葡萄: '雨后紫',
+  柠檬书页: '金盏花',
+  玫瑰砂岩: '樱花露',
+  午夜电台: '深夜蓝',
+};
+const legacyChartPaletteMap: Record<string, string> = {
+  清晰分类: '清泉分类',
+  克制商务: '北欧晨光',
+  单色层级: '蓝色层级',
+};
 export function sanitize(value: unknown): Design | null {
   if (!value || typeof value !== 'object') return null;
   const v = value as Design;
@@ -297,9 +469,21 @@ export function sanitize(value: unknown): Design | null {
     !roles.every(([key]) => /^#[0-9a-f]{6}$/i.test(v.colors[key]))
   )
     return null;
+  const paletteName = legacyPaletteMap[v.palette] ?? v.palette;
+  const migratedPalette = palettes.find((item) => item.name === paletteName);
+  const chartPaletteName =
+    legacyChartPaletteMap[v.chartPalette] ?? v.chartPalette;
+  const migratedChartPalette = chartPalettes.find(
+    (item) => item.name === chartPaletteName,
+  );
   return {
     ...defaults,
     ...v,
+    palette: paletteName,
+    colors:
+      legacyPaletteMap[v.palette] && migratedPalette
+        ? { ...migratedPalette.colors }
+        : v.colors,
     name: typeof v.name === 'string' ? v.name.slice(0, 60) : defaults.name,
     font: v.font in fonts ? v.font : 'sans',
     base: Math.max(12, Math.min(18, Number(v.base) || 14)),
@@ -311,15 +495,17 @@ export function sanitize(value: unknown): Design | null {
     shadow: ['无阴影', '轻盈', '柔和'].includes(v.shadow) ? v.shadow : '轻盈',
     button: ['实色', '描边'].includes(v.button) ? v.button : '实色',
     chartPalette:
-      typeof v.chartPalette === 'string'
-        ? v.chartPalette
+      typeof chartPaletteName === 'string'
+        ? chartPaletteName
         : defaults.chartPalette,
     chartColors:
-      Array.isArray(v.chartColors) &&
-      v.chartColors.length === 6 &&
-      v.chartColors.every((color) => /^#[0-9a-f]{6}$/i.test(color))
-        ? v.chartColors
-        : [...defaults.chartColors],
+      legacyChartPaletteMap[v.chartPalette] && migratedChartPalette
+        ? [...migratedChartPalette.colors]
+        : Array.isArray(v.chartColors) &&
+            v.chartColors.length === 6 &&
+            v.chartColors.every((color) => /^#[0-9a-f]{6}$/i.test(color))
+          ? v.chartColors
+          : [...defaults.chartColors],
     chartTitleSize: Math.max(
       14,
       Math.min(20, Number(v.chartTitleSize) || defaults.chartTitleSize),

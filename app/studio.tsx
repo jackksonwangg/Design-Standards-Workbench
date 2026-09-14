@@ -13,12 +13,10 @@ import {
   Grid2X2,
   Layers,
   LayoutDashboard,
-  Monitor,
   Palette,
   Plus,
   RotateCcw,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Type,
   X,
@@ -324,7 +322,6 @@ export default function Studio() {
     [section, setSection] = useState('colors'),
     [view, setView] = useState('studio'),
     [scene, setScene] = useState('dashboard'),
-    [device, setDevice] = useState('desktop'),
     [toast, setToast] = useState(''),
     [help, setHelp] = useState(false),
     [reset, setReset] = useState(false),
@@ -1258,24 +1255,6 @@ export default function Studio() {
                     <strong>实时预览</strong>
                     <span className="preview-hint">让规则落在真实界面上</span>
                   </div>
-                  <div className="device-controls">
-                    <button
-                      aria-label="桌面预览"
-                      aria-pressed={device === 'desktop'}
-                      className={device === 'desktop' ? 'selected' : ''}
-                      onClick={() => setDevice('desktop')}
-                    >
-                      <Monitor size={17} />
-                    </button>
-                    <button
-                      aria-label="移动端预览"
-                      aria-pressed={device === 'mobile'}
-                      className={device === 'mobile' ? 'selected' : ''}
-                      onClick={() => setDevice('mobile')}
-                    >
-                      <Smartphone size={16} />
-                    </button>
-                  </div>
                 </div>
                 <Tabs value={scene} onValueChange={(v) => setScene(String(v))}>
                   <TabsList className="scene-tabs">
@@ -1301,12 +1280,7 @@ export default function Studio() {
                     </TabsTrigger>
                   </TabsList>
                   <div className="preview-mat">
-                    <div
-                      className={
-                        'preview-browser ' +
-                        (device === 'mobile' ? 'mobile' : '')
-                      }
-                    >
+                    <div className="preview-browser">
                       <div className="browser-chrome">
                         <div>
                           <i />
@@ -1944,10 +1918,6 @@ export default function Studio() {
               </div>
             </section>
           )}
-          <footer className="workspace-footer">
-            <span>好的界面，有自己的基调。</span>
-            <span>选择 · 组合 · 形成规范</span>
-          </footer>
         </main>
       </div>
       {toast && (

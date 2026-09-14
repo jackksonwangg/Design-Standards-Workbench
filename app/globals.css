@@ -695,24 +695,6 @@ button:not(:disabled):hover {
   color: #93988c;
   margin-left: 7px;
 }
-.device-controls {
-  display: flex;
-  padding: 3px;
-  border: 1px solid #e1e4da;
-  border-radius: 6px;
-  background: #f3f4ef;
-  gap: 4px;
-}
-.device-controls button {
-  padding: 5px 9px;
-  color: #9aa08f;
-  border-radius: 3px;
-}
-.device-controls button.selected {
-  background: white;
-  color: #4b5b42;
-  box-shadow: 0 1px 3px #00000009;
-}
 .scene-tabs {
   background: none !important;
   padding: 0 !important;
@@ -1193,16 +1175,6 @@ button:not(:disabled):hover {
   font-size: 11px;
   padding: 10px 6px 5px;
   color: #727d65;
-}
-.workspace-footer {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid #e8ebe2;
-  padding: 21px 0;
-  margin-top: 30px;
-  font-size: 10px;
-  color: #969e8b;
-  letter-spacing: 0.4px;
 }
 .field {
   margin: 22px 0;
@@ -2661,10 +2633,6 @@ button:not(:disabled):hover {
   .palette-strip {
     height: 45px;
   }
-  .workspace-footer {
-    font-size: 9px;
-    gap: 10px;
-  }
   .palette-gallery {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -3217,9 +3185,6 @@ button:not(:disabled):hover {
 .save-status,
 .range-limits,
 .component-rules p,
-.workspace-footer {
-  font-size: 12px;
-}
 .color-description > span {
   white-space: normal;
   line-height: 1.5;
@@ -3263,9 +3228,6 @@ button:not(:disabled):hover {
   }
   .settings-content {
     padding: 22px;
-  }
-  .workspace-footer {
-    font-size: 10px;
   }
   .preview-hint {
     display: none;

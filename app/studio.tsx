@@ -403,6 +403,33 @@ export default function Studio() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setToast('规范已导出，可交给 CodeBuddy 使用');
   }
+  function downloadTokenJson() {
+    const payload = {
+      name: s.name,
+      version: '1.1',
+      tokenLayers: {
+        primitive: s.colors,
+        semantic: tokens(s),
+        component: {
+          radius: s.radius,
+          shadow: s.shadow,
+          controlHeight: tokens(s)['--p-control'],
+          chartPalette: s.chartColors,
+        },
+      },
+    };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(payload, null, 2)], {
+        type: 'application/json;charset=utf-8',
+      }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'design-tokens.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setToast('已导出 Token JSON');
+  }
   async function copy() {
     try {
       await navigator.clipboard.writeText(markdown(s));
@@ -597,6 +624,7 @@ export default function Studio() {
               <section className="settings-panel">
                 <Tabs
                   value={section}
+                  style={tokens(s) as CSSProperties}
                   onValueChange={(v) => {
                     setSection(String(v));
                     if (v === 'data') setScene('data');
@@ -682,6 +710,31 @@ export default function Studio() {
                           主色不需要填满页面。把它留给最重要的操作，其他内容交给中性色。
                         </p>
                       </div>
+                      <details className="advanced-rules">
+                        <summary>
+                          展开 Token 与深色模式 <span>状态由系统推导，不必手填十套颜色</span>
+                        </summary>
+                        <div className="token-flow" aria-label="颜色 Token 分层">
+                          <span>原始色板</span><ArrowRight size={13} /><span>语义角色</span><ArrowRight size={13} /><span>组件状态</span>
+                        </div>
+                        <div className="state-swatches">
+                          {[
+                            ['默认', 'var(--p-primary)'],
+                            ['悬停', 'var(--p-primary-hover)'],
+                            ['按下', 'var(--p-primary-active)'],
+                            ['禁用', 'var(--p-primary-disabled)'],
+                            ['焦点', 'var(--p-focus)'],
+                          ].map(([label, background]) => (
+                            <span key={label}><i style={{ background }} />{label}</span>
+                          ))}
+                        </div>
+                        <Choice
+                          label="深色模式"
+                          value={s.darkMode}
+                          options={['自动生成', '暂不导出']}
+                          onChange={(v) => update('darkMode', v)}
+                        />
+                      </details>
                     </div>
                   </TabsContent>
                   <TabsContent value="type">
@@ -758,6 +811,12 @@ export default function Studio() {
                             <small>{size}px</small>
                           </div>
                         ))}
+                      </div>
+                      <div className="rule-ledger" aria-label="排版规则基线">
+                        <h3>排版使用基线</h3>
+                        <p><strong>字重</strong><span>正文 400；标题与关键数值 600</span></p>
+                        <p><strong>数字</strong><span>表格与指标使用 tabular-nums，数值右对齐</span></p>
+                        <p><strong>文字色</strong><span>主要、次要、三级、禁用四层，不用灰色猜层级</span></p>
                       </div>
                       <div className="tip">
                         <Type size={17} />
@@ -845,6 +904,12 @@ export default function Studio() {
                         </div>
                         <small>容器内边距 {tokens(s)['--p-padding']}</small>
                       </div>
+                      <div className="rule-ledger" aria-label="企业页面模板">
+                        <h3>企业页面模板</h3>
+                        <p><strong>看板</strong><span>指标 → 图表 → 待办，一页只聚焦一个决策主题</span></p>
+                        <p><strong>列表</strong><span>筛选、结果数、表格、分页；批量操作只在选中后出现</span></p>
+                        <p><strong>表单</strong><span>可见标签、分组字段、固定保存反馈，错误靠近字段</span></p>
+                      </div>
                       <div className="tip">
                         <Grid2X2 size={17} />
                         <p>
@@ -892,10 +957,29 @@ export default function Studio() {
                         options={['实色', '描边']}
                         onChange={(v) => update('button', v)}
                       />
-                      <details className="advanced-rules">
+                      <details className="advanced-rules advanced-component-rules">
                         <summary>
-                          展开高级组件规则 <span>图标、指标卡与状态映射</span>
+                          <span className="advanced-summary-copy">
+                            <strong>高级组件规则</strong>
+                            <small>动效、图标、指标卡与状态映射</small>
+                          </span>
+                          <ChevronRight className="advanced-chevron" size={18} />
                         </summary>
+                        <div className="subheading status-heading">
+                          动效系统<span>只解释状态变化，支持减少动效</span>
+                        </div>
+                        <Choice
+                          label="状态动效时长"
+                          value={`${s.motionDuration}ms`}
+                          options={['0ms', '160ms', '240ms']}
+                          onChange={(v) => update('motionDuration', Number.parseInt(v, 10))}
+                        />
+                        <Choice
+                          label="动效节奏"
+                          value={s.motionEasing}
+                          options={['标准缓动', '快速进出']}
+                          onChange={(v) => update('motionEasing', v)}
+                        />
                         <div className="subheading status-heading">
                           图标系统<span>来源、风格与尺寸统一</span>
                         </div>
@@ -1014,25 +1098,6 @@ export default function Studio() {
                           </div>
                         </div>
                       </details>
-                      <div className="component-rules">
-                        <h3>一起遵循的规则</h3>
-                        <p>
-                          <Check />
-                          边框统一使用 1px
-                        </p>
-                        <p>
-                          <Check />
-                          键盘操作保留清晰的焦点轮廓
-                        </p>
-                        <p>
-                          <Check />
-                          禁用、错误与加载各有反馈
-                        </p>
-                        <p>
-                          <Check />
-                          动效仅用于解释状态变化
-                        </p>
-                      </div>
                       <div className="tip">
                         <MousePointer2 size={17} />
                         <p>
@@ -1250,7 +1315,7 @@ export default function Studio() {
                 <div className="settings-footer">
                   <ShieldCheck size={14} />
                   <span>
-                    规范健康度 {healthScore} · 所有调整会同步到预览与文档
+                    对比度健康度 {healthScore} · Token、预览与文档实时同步
                   </span>
                 </div>
               </section>
@@ -1826,10 +1891,16 @@ export default function Studio() {
                     这不是交付后的说明书。每次前端或设计变更都先读它，再开始修改。
                   </p>
                 </div>
-                <button className="btn" onClick={copy}>
-                  <Copy size={16} />
-                  复制全文
-                </button>
+                <div className="document-actions">
+                  <button className="btn" onClick={downloadTokenJson}>
+                    <ArrowDownToLine size={16} />
+                    Token JSON
+                  </button>
+                  <button className="btn" onClick={copy}>
+                    <Copy size={16} />
+                    复制全文
+                  </button>
+                </div>
               </div>
               <div className="document-gate">
                 <div>
@@ -1870,13 +1941,13 @@ export default function Studio() {
                   {[
                     '强制变更门禁与交付声明',
                     '设计原则与使用边界',
-                    '9 个语义颜色',
+                    '三层颜色 Token 与五种交互状态',
                     '5 级字体层级',
                     '页面网格、内容宽度与间距',
-                    '组件样式与交互状态',
+                    '组件状态、动效节奏与减少动效规则',
                     '图标来源、风格、尺寸与语义',
                     'KPI 卡片信息层级与状态颜色',
-                    '表格密度与企业页面状态',
+                    '表格密度、页面模板与企业高风险状态',
                     '图表尺寸、密度、标签与卡片规范',
                     '柱状、折线、饼状与桑基图规则',
                     '可复用 CSS 变量',

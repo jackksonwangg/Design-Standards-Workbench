@@ -46,6 +46,8 @@ export type Design = {
   contentWidth: number;
   tableRowHeight: number;
   motionDuration: number;
+  motionEasing: string;
+  darkMode: string;
 };
 const semantic = { success: '#087A5B', warning: '#9A5B00', danger: '#C13F55' };
 export const palettes = [
@@ -369,7 +371,7 @@ export const defaults: Design = {
   iconLibrary: 'Lucide',
   iconStyle: '线性',
   iconSize: 20,
-  iconStroke: 1.75,
+  iconStroke: 2,
   metricValueSize: 30,
   cardHeaderHeight: 56,
   chartPalette: chartPalettes[0].name,
@@ -388,6 +390,8 @@ export const defaults: Design = {
   contentWidth: 1440,
   tableRowHeight: 44,
   motionDuration: 160,
+  motionEasing: '标准缓动',
+  darkMode: '自动生成',
 };
 export function luminance(hex: string) {
   const v = hex
@@ -430,9 +434,18 @@ export function tokens(s: Design): Record<string, string> {
     '--p-success': c.success,
     '--p-warning': c.warning,
     '--p-danger': c.danger,
+    '--p-info': c.primary,
     '--p-on-primary': onColor(c.primary),
     '--p-soft': `color-mix(in srgb, ${c.primary} 10%, ${c.surface})`,
+    '--p-primary-hover': `color-mix(in srgb, ${c.primary} 88%, ${onColor(c.primary) === '#FFFFFF' ? '#000000' : '#FFFFFF'})`,
+    '--p-primary-active': `color-mix(in srgb, ${c.primary} 76%, ${onColor(c.primary) === '#FFFFFF' ? '#000000' : '#FFFFFF'})`,
+    '--p-primary-disabled': `color-mix(in srgb, ${c.primary} 40%, ${c.surface})`,
     '--p-hover': `color-mix(in srgb, ${c.primary} 88%, ${onColor(c.primary) === '#FFFFFF' ? '#000000' : '#FFFFFF'})`,
+    '--p-surface-hover': `color-mix(in srgb, ${c.primary} 5%, ${c.surface})`,
+    '--p-surface-active': `color-mix(in srgb, ${c.primary} 10%, ${c.surface})`,
+    '--p-text-tertiary': `color-mix(in srgb, ${c.text} 58%, ${c.surface})`,
+    '--p-text-disabled': `color-mix(in srgb, ${c.text} 38%, ${c.surface})`,
+    '--p-focus': `color-mix(in srgb, ${c.primary} 72%, #FFFFFF)`,
     '--p-font': fonts[s.font],
     '--p-body': `${t.body}px`,
     '--p-caption': `${t.caption}px`,
@@ -453,6 +466,10 @@ export function tokens(s: Design): Record<string, string> {
     '--p-content-max': `${s.contentWidth}px`,
     '--p-table-row': `${s.tableRowHeight}px`,
     '--p-motion': `${s.motionDuration}ms`,
+    '--p-ease':
+      s.motionEasing === '快速进出'
+        ? 'cubic-bezier(.2, 0, 0, 1)'
+        : 'cubic-bezier(.2, .8, .2, 1)',
     '--p-shadow':
       s.shadow === '无阴影'
         ? 'none'
@@ -617,6 +634,12 @@ export function sanitize(value: unknown): Design | null {
     motionDuration: [0, 160, 240].includes(v.motionDuration)
       ? v.motionDuration
       : defaults.motionDuration,
+    motionEasing: ['标准缓动', '快速进出'].includes(v.motionEasing)
+      ? v.motionEasing
+      : defaults.motionEasing,
+    darkMode: ['自动生成', '暂不导出'].includes(v.darkMode)
+      ? v.darkMode
+      : defaults.darkMode,
   };
 }
 export function markdown(s: Design) {
@@ -625,7 +648,7 @@ export function markdown(s: Design) {
   const chartWarn = chartChecks(s).filter((item) => !item.pass);
   return `# ${s.name.replace(/[\r\n#]/g, ' ').trim() || '我的设计规范'}
 
-> 由基调生成。此文件是本项目所有页面的统一视觉约束；请先阅读，再生成或修改 UI。
+> 由基调生成 · 规范版本 v1.1。此文件是本项目所有页面的统一视觉约束；请先阅读，再生成或修改 UI。
 
 ## 0. 变更门禁（必须执行）
 
@@ -661,6 +684,20 @@ export function markdown(s: Design) {
 ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join('\n')}
 | 主按钮文字 | ${onColor(s.colors.primary)} | 根据主色自动选择高对比文字 |
 
+### 2.1 Token 分层与交互状态
+
+颜色只允许按“原始色板 → 语义角色 → 组件状态”三层使用：原始色板只在 Token 定义中出现；页面引用语义角色；按钮、输入框、表格等组件再引用状态 Token。禁止组件内直接写 HEX。
+
+| 组件状态 | Token | 规则 |
+| --- | --- | --- |
+| 默认 | --p-primary / --p-surface | 可交互对象的初始状态 |
+| 悬停 | --p-primary-hover / --p-surface-hover | 只用于有指针或键盘焦点的对象 |
+| 按下 | --p-primary-active / --p-surface-active | 必须短暂且不改变布局 |
+| 禁用 | --p-primary-disabled / --p-text-disabled | 不可操作且保留原因说明 |
+| 焦点 | --p-focus | 2px 轮廓、3px offset，始终可见 |
+
+文本分为主要、次要、三级、禁用四层：--p-text、--p-muted、--p-text-tertiary、--p-text-disabled。${s.darkMode === '自动生成' ? '深色模式已纳入导出：从语义 Token 反推深色表面，不直接反转或复制浅色 HEX；正文对比度仍须达到 4.5:1。' : '当前未导出深色模式；新增深色页面前必须先补齐同名语义 Token，不能临时换色。'}
+
 不要把品牌主色用于所有正文，不要用警告或错误色作装饰。同一状态保留同一颜色，颜色之外同时使用文字或图标说明。
 
 ## 3. 字体与排版
@@ -675,7 +712,7 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 | 正文 | ${t.body}px | 400 | 常规内容、表单输入 |
 | 辅助 | ${t.caption}px | 400 | 次要说明，不能承载唯一关键指令 |
 
-标题行高 1.3；数字使用 tabular-nums；正文每行建议不超过 75 个字符。禁止随意增加零散字号。
+标题行高 1.3；正文行高遵循“字号 + 8px”的稳定节奏；数字使用 tabular-nums；正文每行建议不超过 75 个字符。表格和指标的数字右对齐，日期、金额、百分比的位数变化不得造成跳动。禁止随意增加零散字号或 500/700 等无定义字重。
 
 ## 4. 布局与间距
 - 基础单位：${s.unit}px。允许间距：${[1, 2, 3, 4, 6, 8, 12].map((x) => x * s.unit + 'px').join('、')}。
@@ -684,6 +721,15 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - 移动端交互目标至少 44px；放大文字后允许换行和布局重排。
 - 页面采用 ${s.pageGrid}响应式网格，内容最大宽度 ${s.contentWidth}px。桌面保留导航和内容层级；窄屏优先保留任务主路径，侧栏可收起但当前位置必须清楚。
 
+### 页面模板
+| 模板 | 首屏结构 | 必备规则 |
+| --- | --- | --- |
+| 看板 | 标题与时间范围 → 关键指标 → 关键图表/待办 | 一个页面只突出一个决策主题 |
+| 列表 | 标题与主操作 → 筛选/结果数 → 表格 → 分页 | 批量操作只在选中后出现 |
+| 详情 | 返回/面包屑 → 标题与状态 → 内容分区 | 状态、责任人和更新时间靠近标题 |
+| 创建/编辑 | 标题 → 分组表单 → 固定操作区 | 字段标签可见，错误贴近字段 |
+| 设置 | 分类导航 → 单一设置组 → 保存反馈 | 未保存变更必须可辨识 |
+
 ## 5. 组件风格与状态
 - 统一圆角：${s.radius}px；边框：1px solid var(--p-border)；阴影：${s.shadow}。
 - 主按钮：${s.button === '实色' ? '主色背景 + 主按钮文字色' : '透明背景 + 主色文字及边框'}。次按钮：容器背景 + 正文颜色 + 边框。危险操作使用错误色并配明确文字。
@@ -691,7 +737,7 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - Focus：2px 实线主色轮廓，offset 3px，不移除键盘焦点。
 - Disabled：opacity .45，禁止触发动作；Loading：保留按钮尺寸，显示文字状态并阻止重复提交。
 - Error：错误文字靠近输入项；Empty：说明原因和下一步；Success：明确反馈结果，不仅变色。
-- 动效仅用于状态反馈，时长 ${s.motionDuration}ms，尊重 prefers-reduced-motion。
+- 动效仅用于状态反馈，时长 ${s.motionDuration}ms，节奏 ${s.motionEasing}。进入、退出、展开、反馈四类动效只使用这一组合；尊重 prefers-reduced-motion。
 
 ### 5.1 图标系统
 - 唯一来源：${s.iconLibrary}，包名 \`${iconPackages[s.iconLibrary]}\`；风格：${s.iconStyle}；标准尺寸：${s.iconSize}px；${s.iconStyle === '线性' ? `描边 ${s.iconStroke}px，使用 currentColor` : '使用图标库原生 filled 版本，禁止给线性图标直接填充'}。同一页面不得混用不同图标库、线性与面性风格，不得使用 Emoji、Iconfont 私有字符或来源不明的 SVG 替代。
@@ -721,6 +767,14 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - 操作反馈：保存、提交、导入等动作必须有进行中、成功和失败反馈；危险操作在执行前二次确认，成功后尽可能提供撤销；不使用只靠颜色的反馈。
 - 数据表达：金额、百分比、日期、时区、单位和小数位在同一页面保持一致；未知值显示“—”并说明原因，禁止用 0 冒充缺失数据。敏感字段按权限脱敏，导出、复制与批量操作应记录或提示范围。
 - 动效：默认 ${s.motionDuration === 0 ? '不使用动效' : `${s.motionDuration}ms`}；只用于解释状态或层级变化，不以循环、闪烁或位移吸引注意。系统开启减少动效时必须静止。
+
+| 高风险场景 | 必须呈现 |
+| --- | --- |
+| 无权限 | 原因、所需权限与申请入口/联系人 |
+| 批量操作 | 已选数量、影响范围与可撤销结果 |
+| 危险操作 | 明确对象、不可逆影响与二次确认 |
+| 并发冲突 | 哪个版本更新、可比较内容与保留/覆盖动作 |
+| 保存失败 | 字段是否保留、失败原因与重试入口 |
 
 ## 7. 数据可视化规范
 - 图表先回答一个问题，再选择图形。标题直接写清指标或结论，避免“数据分析”“趋势图”一类空泛标题。

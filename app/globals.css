@@ -1912,9 +1912,6 @@ button:not(:disabled):hover {
   border-radius: 3px 3px 0 0;
   background: var(--p-primary);
 }
-.palette-preview-bars i:nth-child(5) {
-  background: var(--p-success);
-}
 .palette-preview-axis {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

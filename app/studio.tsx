@@ -275,7 +275,13 @@ function PalettePagePreview({ design }: { design: Design }) {
                 </div>
                 <div className="palette-preview-bars" aria-hidden="true">
                   {[46, 68, 54, 83, 72, 91, 63].map((value, index) => (
-                    <i key={index} style={{ height: `${value}%` }} />
+                    <i
+                      key={index}
+                      style={{
+                        height: `${value}%`,
+                        background: design.chartColors[index % design.chartColors.length],
+                      }}
+                    />
                   ))}
                 </div>
                 <div className="palette-preview-axis">

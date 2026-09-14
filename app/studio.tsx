@@ -47,6 +47,7 @@ import {
   defaults,
   fonts,
   fontNames,
+  iconPackages,
   typeSizes,
   tokens,
   checks,
@@ -62,7 +63,6 @@ const sections = [
   { id: 'space', label: '布局间距', icon: Grid2X2 },
   { id: 'component', label: '组件风格', icon: MousePointer2 },
   { id: 'data', label: '数据可视化', icon: ChartNoAxesCombined },
-  { id: 'governance', label: '交付治理', icon: ShieldCheck },
 ];
 function Choice({
   label,
@@ -395,7 +395,7 @@ export default function Studio() {
     );
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${s.name.replace(/[\\/:*?"<>|\r\n]/g, '').trim() || 'DESIGN'}.md`;
+    a.download = `${s.name.replace(/[\\/:*?"<>|\r\n]/g, '').trim() || 'DESIGN_SYSTEM'}.md`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setToast('规范已导出，可交给 CodeBuddy 使用');
@@ -431,7 +431,8 @@ export default function Studio() {
     results = checks(s),
     chartResults = chartChecks(s),
     chartFailed = chartResults.filter((item) => !item.pass).length,
-    failed = results.filter(([, r]) => r < 4.5).length;
+    failed = results.filter(([, r]) => r < 4.5).length,
+    healthScore = Math.max(0, 100 - failed * 8 - chartFailed * 5);
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -793,6 +794,38 @@ export default function Studio() {
                         options={['紧凑', '舒适', '宽松']}
                         onChange={(v) => update('density', v)}
                       />
+                      <div className="subheading status-heading">
+                        中台页面骨架<span>全局默认，避免页面各自设定</span>
+                      </div>
+                      <Choice
+                        label="响应式页面网格"
+                        value={s.pageGrid}
+                        options={['12 列', '8 列']}
+                        onChange={(v) => update('pageGrid', v)}
+                      />
+                      <Choice
+                        label="桌面内容最大宽度"
+                        value={`${s.contentWidth}px`}
+                        options={['1200px', '1440px', '1600px']}
+                        onChange={(v) =>
+                          update('contentWidth', Number.parseInt(v, 10))
+                        }
+                      />
+                      <Choice
+                        label="列表与表格行高"
+                        value={`${s.tableRowHeight}px`}
+                        options={[
+                          '36px',
+                          '40px',
+                          '44px',
+                          '48px',
+                          '52px',
+                          '56px',
+                        ]}
+                        onChange={(v) =>
+                          update('tableRowHeight', Number.parseInt(v, 10))
+                        }
+                      />
                       <div className="spacing-diagram">
                         <div
                           style={{
@@ -856,6 +889,128 @@ export default function Studio() {
                         options={['实色', '描边']}
                         onChange={(v) => update('button', v)}
                       />
+                      <details className="advanced-rules">
+                        <summary>
+                          展开高级组件规则 <span>图标、指标卡与状态映射</span>
+                        </summary>
+                        <div className="subheading status-heading">
+                          图标系统<span>来源、风格与尺寸统一</span>
+                        </div>
+                        <Choice
+                          label="唯一图标来源"
+                          value={s.iconLibrary}
+                          options={['Lucide', 'Phosphor', 'Heroicons']}
+                          onChange={(v) => update('iconLibrary', v)}
+                        />
+                        <Choice
+                          label="图标视觉风格"
+                          value={s.iconStyle}
+                          options={['线性', '面性']}
+                          onChange={(v) => update('iconStyle', v)}
+                        />
+                        <Choice
+                          label="标准图标尺寸"
+                          value={`${s.iconSize}px`}
+                          options={['16px', '20px', '24px']}
+                          onChange={(v) =>
+                            update('iconSize', Number.parseInt(v, 10))
+                          }
+                        />
+                        {s.iconStyle === '线性' && (
+                          <Range
+                            label="线性图标描边"
+                            value={s.iconStroke}
+                            min={1.5}
+                            max={2.25}
+                            step={0.25}
+                            unit="px"
+                            onChange={(v) => update('iconStroke', v)}
+                          />
+                        )}
+                        <div className="icon-specimen">
+                          <span>
+                            <LayoutDashboard
+                              size={s.iconSize}
+                              strokeWidth={s.iconStroke}
+                              fill={
+                                s.iconStyle === '面性' ? 'currentColor' : 'none'
+                              }
+                            />
+                            看板
+                          </span>
+                          <span>
+                            <FileText
+                              size={s.iconSize}
+                              strokeWidth={s.iconStroke}
+                              fill={
+                                s.iconStyle === '面性' ? 'currentColor' : 'none'
+                              }
+                            />
+                            文档
+                          </span>
+                          <small>
+                            {s.iconLibrary} · {iconPackages[s.iconLibrary]} ·{' '}
+                            {s.iconStyle}
+                          </small>
+                        </div>
+                        <div className="subheading status-heading">
+                          数据卡片<span>一个卡片只突出一个指标</span>
+                        </div>
+                        <Choice
+                          label="核心数值字号"
+                          value={`${s.metricValueSize}px`}
+                          options={[
+                            '24px',
+                            '28px',
+                            '30px',
+                            '32px',
+                            '36px',
+                            '40px',
+                          ]}
+                          onChange={(v) =>
+                            update('metricValueSize', Number.parseInt(v, 10))
+                          }
+                        />
+                        <Choice
+                          label="卡片标题区最小高度"
+                          value={`${s.cardHeaderHeight}px`}
+                          options={['48px', '56px', '64px', '72px']}
+                          onChange={(v) =>
+                            update('cardHeaderHeight', Number.parseInt(v, 10))
+                          }
+                        />
+                        <div
+                          className="status-map"
+                          aria-label="状态颜色对应关系"
+                        >
+                          <h3>状态颜色对应关系</h3>
+                          <div>
+                            <i style={{ background: s.colors.primary }} />
+                            <span>主色</span>
+                            <strong>信息、进行中、选中</strong>
+                          </div>
+                          <div>
+                            <i style={{ background: s.colors.success }} />
+                            <span>成功色</span>
+                            <strong>成功、正常、已完成</strong>
+                          </div>
+                          <div>
+                            <i style={{ background: s.colors.warning }} />
+                            <span>警告色</span>
+                            <strong>待处理、临期、风险</strong>
+                          </div>
+                          <div>
+                            <i style={{ background: s.colors.danger }} />
+                            <span>错误色</span>
+                            <strong>失败、阻断、危险操作</strong>
+                          </div>
+                          <div>
+                            <i style={{ background: s.colors.muted }} />
+                            <span>中性色</span>
+                            <strong>停用、未知、次要状态</strong>
+                          </div>
+                        </div>
+                      </details>
                       <div className="component-rules">
                         <h3>一起遵循的规则</h3>
                         <p>
@@ -970,57 +1125,116 @@ export default function Studio() {
                             : '6 个图表色均通过 3:1 图形对比度检查'}
                         </span>
                       </div>
-                      <div className="subheading status-heading">
-                        图表文字层级<span>全局统一</span>
-                      </div>
-                      <Range
-                        label="卡片标题"
-                        value={s.chartTitleSize}
-                        min={14}
-                        max={20}
-                        unit="px"
-                        onChange={(v) => update('chartTitleSize', v)}
-                      />
-                      <Range
-                        label="数据标签与说明"
-                        value={s.chartLabelSize}
-                        min={11}
-                        max={16}
-                        unit="px"
-                        onChange={(v) => update('chartLabelSize', v)}
-                      />
-                      <Range
-                        label="坐标轴与图例"
-                        value={s.chartAxisSize}
-                        min={10}
-                        max={14}
-                        unit="px"
-                        onChange={(v) => update('chartAxisSize', v)}
-                      />
-                      <div className="subheading status-heading">
-                        图表卡片<span>标题在左上，操作在右上</span>
-                      </div>
-                      <Range
-                        label="卡片内边距"
-                        value={s.chartCardPadding}
-                        min={16}
-                        max={32}
-                        step={4}
-                        unit="px"
-                        onChange={(v) => update('chartCardPadding', v)}
-                      />
-                      <Choice
-                        label="图例位置"
-                        value={s.chartLegend}
-                        options={['顶部左对齐', '顶部右对齐', '底部左对齐']}
-                        onChange={(v) => update('chartLegend', v)}
-                      />
-                      <Choice
-                        label="网格线"
-                        value={s.chartGrid}
-                        options={['仅横向', '横纵都有', '不显示']}
-                        onChange={(v) => update('chartGrid', v)}
-                      />
+                      <details className="advanced-rules">
+                        <summary>
+                          展开图表细则 <span>文字、卡片、容量与长标签</span>
+                        </summary>
+                        <div className="subheading status-heading">
+                          图表文字层级<span>全局统一</span>
+                        </div>
+                        <Range
+                          label="卡片标题"
+                          value={s.chartTitleSize}
+                          min={14}
+                          max={20}
+                          unit="px"
+                          onChange={(v) => update('chartTitleSize', v)}
+                        />
+                        <Range
+                          label="数据标签与说明"
+                          value={s.chartLabelSize}
+                          min={11}
+                          max={16}
+                          unit="px"
+                          onChange={(v) => update('chartLabelSize', v)}
+                        />
+                        <Range
+                          label="坐标轴与图例"
+                          value={s.chartAxisSize}
+                          min={10}
+                          max={14}
+                          unit="px"
+                          onChange={(v) => update('chartAxisSize', v)}
+                        />
+                        <div className="subheading status-heading">
+                          图表卡片<span>标题在左上，操作在右上</span>
+                        </div>
+                        <Range
+                          label="卡片内边距"
+                          value={s.chartCardPadding}
+                          min={16}
+                          max={32}
+                          step={4}
+                          unit="px"
+                          onChange={(v) => update('chartCardPadding', v)}
+                        />
+                        <Choice
+                          label="图例位置"
+                          value={s.chartLegend}
+                          options={['顶部左对齐', '顶部右对齐', '底部左对齐']}
+                          onChange={(v) => update('chartLegend', v)}
+                        />
+                        <Choice
+                          label="网格线"
+                          value={s.chartGrid}
+                          options={['仅横向', '横纵都有', '不显示']}
+                          onChange={(v) => update('chartGrid', v)}
+                        />
+                        <div className="subheading status-heading">
+                          绘图区与数据密度
+                          <span>避免把所有数据硬塞进一张图</span>
+                        </div>
+                        <Choice
+                          label="绘图区基准高度"
+                          value={`${s.chartHeight}px`}
+                          options={['280px', '320px', '360px', '400px']}
+                          onChange={(v) =>
+                            update('chartHeight', Number.parseInt(v, 10))
+                          }
+                        />
+                        <Choice
+                          label="单图最大可见类别"
+                          value={`${s.chartMaxCategories} 类`}
+                          options={['8 类', '12 类', '15 类']}
+                          onChange={(v) =>
+                            update('chartMaxCategories', Number.parseInt(v, 10))
+                          }
+                        />
+                        <Range
+                          label="柱状图柱间距"
+                          value={s.chartBarGap}
+                          min={16}
+                          max={48}
+                          step={4}
+                          unit="%"
+                          onChange={(v) => update('chartBarGap', v)}
+                        />
+                        <Choice
+                          label="长标签处理"
+                          value={s.chartLabelStrategy}
+                          options={['自适应（推荐）', '固定展示', '交互查看']}
+                          onChange={(v) => update('chartLabelStrategy', v)}
+                        />
+                        <div className="chart-rule-ledger">
+                          <h3>图形容量基线</h3>
+                          <p>
+                            <strong>柱状图</strong>
+                            <span>5–12 根 · 柱宽 24–56px · 标签先换两行</span>
+                          </p>
+                          <p>
+                            <strong>折线图</strong>
+                            <span>8–24 点 · 最多 4 条线 · 缺失值断线</span>
+                          </p>
+                          <p>
+                            <strong>环形图</strong>
+                            <span>2–5 类 · 差异小于 5% 改用条形图</span>
+                          </p>
+                          <p>
+                            <strong>桑基图</strong>
+                            <span>3–8 个主节点 · 流入流出必须守恒</span>
+                          </p>
+                        </div>
+                      </details>
                       <div className="tip">
                         <ChartNoAxesCombined size={17} />
                         <p>
@@ -1029,103 +1243,12 @@ export default function Studio() {
                       </div>
                     </div>
                   </TabsContent>
-                  <TabsContent value="governance">
-                    <div className="settings-content governance-settings">
-                      <div className="section-title">
-                        <h2>企业交付</h2>
-                        <span>GOVERNANCE</span>
-                      </div>
-                      <p className="section-description">
-                        把视觉选择变成可执行的规则，让每一次改动都可追溯、可复用。
-                      </p>
-                      <Choice
-                        label="响应式页面网格"
-                        value={s.pageGrid}
-                        options={['12 列', '8 列']}
-                        onChange={(v) => update('pageGrid', v)}
-                      />
-                      <Choice
-                        label="桌面内容最大宽度"
-                        value={`${s.contentWidth}px`}
-                        options={['1200px', '1440px', '1600px']}
-                        onChange={(v) =>
-                          update('contentWidth', Number.parseInt(v, 10))
-                        }
-                      />
-                      <Range
-                        label="列表与表格行高"
-                        value={s.tableRowHeight}
-                        min={36}
-                        max={56}
-                        step={4}
-                        unit="px"
-                        onChange={(v) => update('tableRowHeight', v)}
-                      />
-                      <Choice
-                        label="状态动效时长"
-                        value={
-                          s.motionDuration === 0
-                            ? '关闭'
-                            : `${s.motionDuration}ms`
-                        }
-                        options={['关闭', '160ms', '240ms']}
-                        onChange={(v) =>
-                          update(
-                            'motionDuration',
-                            v === '关闭' ? 0 : Number.parseInt(v, 10),
-                          )
-                        }
-                      />
-                      <div className="enterprise-baseline">
-                        <h3>不可跳过的企业状态</h3>
-                        <p>
-                          <Check />
-                          <span>
-                            <strong>加载</strong> 与最终布局同尺寸的骨架
-                          </span>
-                        </p>
-                        <p>
-                          <Check />
-                          <span>
-                            <strong>空数据</strong> 说明原因，并给出下一步
-                          </span>
-                        </p>
-                        <p>
-                          <Check />
-                          <span>
-                            <strong>错误与无权限</strong>{' '}
-                            提供可恢复操作或申请路径
-                          </span>
-                        </p>
-                        <p>
-                          <Check />
-                          <span>
-                            <strong>危险动作</strong> 确认后给出可撤销反馈
-                          </span>
-                        </p>
-                      </div>
-                      <div className="delivery-gate-card">
-                        <ShieldCheck size={18} />
-                        <div>
-                          <h3>Agent 变更门禁</h3>
-                          <p>
-                            先完整读 DESIGN.md，再写代码；只复用既有 Token
-                            和组件。遇到缺口，先补规范与预览，再进入开发。
-                          </p>
-                        </div>
-                      </div>
-                      <div className="tip">
-                        <ShieldCheck size={17} />
-                        <p>
-                          交付时必须说明：本次范围、复用项、补充的规范，以及响应式、状态、焦点、对比度和数据口径的检查结果。
-                        </p>
-                      </div>
-                    </div>
-                  </TabsContent>
                 </Tabs>
                 <div className="settings-footer">
                   <ShieldCheck size={14} />
-                  <span>所有调整会同步到预览与文档</span>
+                  <span>
+                    规范健康度 {healthScore} · 所有调整会同步到预览与文档
+                  </span>
                 </div>
               </section>
               <section className="preview-column">
@@ -1172,6 +1295,10 @@ export default function Studio() {
                       <ChartNoAxesCombined size={14} />
                       数据图表
                     </TabsTrigger>
+                    <TabsTrigger value="stress">
+                      <ShieldCheck size={14} />
+                      一致性测试
+                    </TabsTrigger>
                   </TabsList>
                   <div className="preview-mat">
                     <div
@@ -1194,7 +1321,9 @@ export default function Studio() {
                               ? 'components'
                               : scene === 'data'
                                 ? 'data-visualization'
-                                : 'article'}
+                                : scene === 'stress'
+                                  ? 'consistency-check'
+                                  : 'article'}
                         </span>
                         <span className="browser-caption">示例页面</span>
                       </div>
@@ -1490,6 +1619,78 @@ export default function Studio() {
                         <TabsContent value="data">
                           <DataCharts design={s} />
                         </TabsContent>
+                        <TabsContent value="stress">
+                          <div className="sample-content stress-preview">
+                            <div className="stress-heading">
+                              <div>
+                                <p className="sample-breadcrumb">
+                                  一致性压力测试
+                                </p>
+                                <h1>规则要经得起真实状态。</h1>
+                              </div>
+                              <span className="p-badge success">
+                                <CheckCircle2 size={13} />
+                                已覆盖 5 类场景
+                              </span>
+                            </div>
+                            <div className="stress-grid">
+                              <section>
+                                <h2>列表与筛选</h2>
+                                <div className="stress-toolbar">
+                                  <span>全部项目</span>
+                                  <button className="p-secondary">筛选</button>
+                                  <button className="p-button">新建</button>
+                                </div>
+                                <div className="stress-row">
+                                  <span className="project-symbol">
+                                    <Layers size={13} />
+                                  </span>
+                                  <strong>增长看板改版</strong>
+                                  <span className="p-badge warning">
+                                    待确认
+                                  </span>
+                                </div>
+                              </section>
+                              <section>
+                                <h2>表单与校验</h2>
+                                <label>项目名称</label>
+                                <input
+                                  placeholder="请输入名称"
+                                  aria-label="项目名称示例"
+                                />
+                                <p className="stress-error">
+                                  <CircleAlert size={13} />
+                                  名称至少输入 2 个字符
+                                </p>
+                              </section>
+                              <section>
+                                <h2>空数据</h2>
+                                <div className="stress-empty">
+                                  <Layers size={20} />
+                                  <strong>还没有筛选结果</strong>
+                                  <span>调整条件，或清除筛选后重试</span>
+                                  <button className="p-secondary">
+                                    清除筛选
+                                  </button>
+                                </div>
+                              </section>
+                              <section>
+                                <h2>风险反馈</h2>
+                                <div className="stress-alert">
+                                  <CircleAlert size={16} />
+                                  <div>
+                                    <strong>数据同步延迟</strong>
+                                    <span>上次更新于 12 分钟前</span>
+                                  </div>
+                                  <button className="p-secondary">重试</button>
+                                </div>
+                              </section>
+                            </div>
+                            <p className="stress-note">
+                              检查点：密度、层级、焦点、状态色、操作优先级与小屏溢出必须保持一致。
+                            </p>
+                          </div>
+                        </TabsContent>
                       </div>
                     </div>
                   </div>
@@ -1656,8 +1857,8 @@ export default function Studio() {
                   <div>
                     <strong>先读规范，再改前端</strong>
                     <p>
-                      页面、组件、颜色、字体、布局和图表都必须先从 DESIGN.md
-                      找到依据；没有规则时先补规则。
+                      页面、组件、颜色、字体、布局和图表都必须先从
+                      DESIGN_SYSTEM.md 找到依据；没有规则时先补规则。
                     </p>
                   </div>
                 </div>
@@ -1667,12 +1868,24 @@ export default function Studio() {
                 <div className="markdown-panel">
                   <div className="document-toolbar">
                     <FileText size={16} />
-                    <span>DESIGN.md</span>
+                    <span>DESIGN_SYSTEM.md</span>
                     <span>{markdown(s).length.toLocaleString()} 字符</span>
                   </div>
                   <pre tabIndex={0}>{markdown(s)}</pre>
                 </div>
                 <aside className="document-summary">
+                  <h2>三层交付</h2>
+                  {[
+                    '给人的设计指南：原则、边界与页面规则',
+                    '给代码的 Token：颜色、字体、间距与组件变量',
+                    '给 Agent 的强约束：先读、复用、补规则、验收',
+                  ].map((t) => (
+                    <p key={t}>
+                      <Check size={15} />
+                      {t}
+                    </p>
+                  ))}
+                  <div className="side-rule" />
                   <h2>交付清单</h2>
                   {[
                     '强制变更门禁与交付声明',
@@ -1681,8 +1894,10 @@ export default function Studio() {
                     '5 级字体层级',
                     '页面网格、内容宽度与间距',
                     '组件样式与交互状态',
+                    '图标来源、风格、尺寸与语义',
+                    'KPI 卡片信息层级与状态颜色',
                     '表格密度与企业页面状态',
-                    '图表文字、色板与卡片规范',
+                    '图表尺寸、密度、标签与卡片规范',
                     '柱状、折线、饼状与桑基图规则',
                     '可复用 CSS 变量',
                     '可读性检查结果',

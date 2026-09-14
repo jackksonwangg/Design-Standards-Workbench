@@ -24,6 +24,12 @@ export type Design = {
   radius: number;
   shadow: string;
   button: string;
+  iconLibrary: string;
+  iconStyle: string;
+  iconSize: number;
+  iconStroke: number;
+  metricValueSize: number;
+  cardHeaderHeight: number;
   chartPalette: string;
   chartColors: string[];
   chartTitleSize: number;
@@ -32,6 +38,10 @@ export type Design = {
   chartCardPadding: number;
   chartLegend: string;
   chartGrid: string;
+  chartHeight: number;
+  chartMaxCategories: number;
+  chartBarGap: number;
+  chartLabelStrategy: string;
   pageGrid: string;
   contentWidth: number;
   tableRowHeight: number;
@@ -271,6 +281,11 @@ export const fonts: Record<string, string> = {
   serif: '"Songti SC", "Noto Serif CJK SC", SimSun, serif',
   humanist: '"Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif',
 };
+export const iconPackages: Record<string, string> = {
+  Lucide: 'lucide-react',
+  Phosphor: '@phosphor-icons/react',
+  Heroicons: '@heroicons/react',
+};
 export const fontNames: Record<string, string> = {
   sans: '现代黑体',
   serif: '人文宋体',
@@ -351,6 +366,12 @@ export const defaults: Design = {
   radius: 8,
   shadow: '轻盈',
   button: '实色',
+  iconLibrary: 'Lucide',
+  iconStyle: '线性',
+  iconSize: 20,
+  iconStroke: 1.75,
+  metricValueSize: 30,
+  cardHeaderHeight: 56,
   chartPalette: chartPalettes[0].name,
   chartColors: [...chartPalettes[0].colors],
   chartTitleSize: 16,
@@ -359,6 +380,10 @@ export const defaults: Design = {
   chartCardPadding: 20,
   chartLegend: '顶部左对齐',
   chartGrid: '仅横向',
+  chartHeight: 320,
+  chartMaxCategories: 12,
+  chartBarGap: 32,
+  chartLabelStrategy: '自适应（推荐）',
   pageGrid: '12 列',
   contentWidth: 1440,
   tableRowHeight: 44,
@@ -420,6 +445,10 @@ export function tokens(s: Design): Record<string, string> {
     '--p-gap': `${s.unit * 4}px`,
     '--p-radius': `${s.radius}px`,
     '--p-control': `${s.density === '紧凑' ? 32 : s.density === '宽松' ? 44 : 38}px`,
+    '--p-icon-size': `${s.iconSize}px`,
+    '--p-icon-stroke': String(s.iconStroke),
+    '--p-metric-value': `${s.metricValueSize}px`,
+    '--p-card-header': `${s.cardHeaderHeight}px`,
     '--p-grid-columns': s.pageGrid.startsWith('8') ? '8' : '12',
     '--p-content-max': `${s.contentWidth}px`,
     '--p-table-row': `${s.tableRowHeight}px`,
@@ -434,6 +463,8 @@ export function tokens(s: Design): Record<string, string> {
     '--chart-label': `${s.chartLabelSize}px`,
     '--chart-axis': `${s.chartAxisSize}px`,
     '--chart-card-padding': `${s.chartCardPadding}px`,
+    '--chart-height': `${s.chartHeight}px`,
+    '--chart-bar-gap': `${s.chartBarGap}%`,
     ...Object.fromEntries(
       s.chartColors.map((color, index) => [`--chart-${index + 1}`, color]),
     ),
@@ -506,6 +537,24 @@ export function sanitize(value: unknown): Design | null {
     radius: Math.max(0, Math.min(24, Number(v.radius) || 0)),
     shadow: ['无阴影', '轻盈', '柔和'].includes(v.shadow) ? v.shadow : '轻盈',
     button: ['实色', '描边'].includes(v.button) ? v.button : '实色',
+    iconLibrary: ['Lucide', 'Phosphor', 'Heroicons'].includes(v.iconLibrary)
+      ? v.iconLibrary
+      : defaults.iconLibrary,
+    iconStyle: ['线性', '面性'].includes(v.iconStyle)
+      ? v.iconStyle
+      : defaults.iconStyle,
+    iconSize: [16, 20, 24].includes(v.iconSize)
+      ? v.iconSize
+      : defaults.iconSize,
+    iconStroke: [1.5, 1.75, 2, 2.25].includes(v.iconStroke)
+      ? v.iconStroke
+      : defaults.iconStroke,
+    metricValueSize: [24, 28, 30, 32, 36, 40].includes(v.metricValueSize)
+      ? v.metricValueSize
+      : defaults.metricValueSize,
+    cardHeaderHeight: [48, 56, 64, 72].includes(v.cardHeaderHeight)
+      ? v.cardHeaderHeight
+      : defaults.cardHeaderHeight,
     chartPalette:
       typeof chartPaletteName === 'string'
         ? chartPaletteName
@@ -542,6 +591,20 @@ export function sanitize(value: unknown): Design | null {
     chartGrid: ['仅横向', '横纵都有', '不显示'].includes(v.chartGrid)
       ? v.chartGrid
       : defaults.chartGrid,
+    chartHeight: [280, 320, 360, 400].includes(v.chartHeight)
+      ? v.chartHeight
+      : defaults.chartHeight,
+    chartMaxCategories: [8, 12, 15].includes(v.chartMaxCategories)
+      ? v.chartMaxCategories
+      : defaults.chartMaxCategories,
+    chartBarGap: [16, 20, 24, 28, 32, 36, 40, 44, 48].includes(v.chartBarGap)
+      ? v.chartBarGap
+      : defaults.chartBarGap,
+    chartLabelStrategy: ['自适应（推荐）', '固定展示', '交互查看'].includes(
+      v.chartLabelStrategy,
+    )
+      ? v.chartLabelStrategy
+      : defaults.chartLabelStrategy,
     pageGrid: ['8 列', '12 列'].includes(v.pageGrid)
       ? v.pageGrid
       : defaults.pageGrid,
@@ -577,7 +640,7 @@ export function markdown(s: Design) {
 每次交付必须附带以下声明：
 
 \`\`\`text
-已阅读 DESIGN.md。
+已阅读 DESIGN_SYSTEM.md。
 本次范围：…
 复用的 Token / 组件：…
 新增或补充的规范：无 / …
@@ -628,7 +691,28 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 - Focus：2px 实线主色轮廓，offset 3px，不移除键盘焦点。
 - Disabled：opacity .45，禁止触发动作；Loading：保留按钮尺寸，显示文字状态并阻止重复提交。
 - Error：错误文字靠近输入项；Empty：说明原因和下一步；Success：明确反馈结果，不仅变色。
-- 动效仅用于状态反馈，时长 160ms，尊重 prefers-reduced-motion。
+- 动效仅用于状态反馈，时长 ${s.motionDuration}ms，尊重 prefers-reduced-motion。
+
+### 5.1 图标系统
+- 唯一来源：${s.iconLibrary}，包名 \`${iconPackages[s.iconLibrary]}\`；风格：${s.iconStyle}；标准尺寸：${s.iconSize}px；${s.iconStyle === '线性' ? `描边 ${s.iconStroke}px，使用 currentColor` : '使用图标库原生 filled 版本，禁止给线性图标直接填充'}。同一页面不得混用不同图标库、线性与面性风格，不得使用 Emoji、Iconfont 私有字符或来源不明的 SVG 替代。
+- 16px 用于表格行内与紧凑辅助操作，20px 用于按钮、表单和导航，24px 用于模块入口；只有空状态或功能说明可放大到 32–48px。
+- 图标与文字间距 8px；图标按钮可见尺寸至少 32px，点击热区至少 40×40px，移动端至少 44×44px。图标不得单独承担陌生业务含义，默认同时显示文字标签。
+- 装饰图标设置 aria-hidden；无可见文字的图标按钮必须有 aria-label；切换类图标还要暴露 aria-pressed 或 aria-expanded。
+- 状态图标固定语义：信息/进行中使用主色，成功使用 success，注意/待处理使用 warning，错误/危险使用 danger，停用/未知使用 muted；颜色之外必须保留图标或文字。
+
+| 状态 | 颜色 | 文案/图标要求 |
+| --- | --- | --- |
+| 信息、进行中、选中 | ${s.colors.primary} | 使用信息、时钟或选中图标，并写明当前状态 |
+| 成功、正常、已完成 | ${s.colors.success} | 使用勾选图标和完成文案 |
+| 注意、待处理、临期 | ${s.colors.warning} | 使用警告图标并说明处理时限 |
+| 错误、阻断、危险 | ${s.colors.danger} | 使用错误图标，提供原因与恢复操作 |
+| 停用、未知、次要 | ${s.colors.muted} | 使用中性文案，不得伪装成成功或失败 |
+
+### 5.2 卡片与指标卡
+- 普通卡片由 Header、Content、可选 Footer 组成。Header 最小高度 ${s.cardHeaderHeight}px，标题左对齐，主要操作右对齐；标题超过一行时允许两行，操作区保持顶部对齐，不压缩标题到省略号。
+- 卡片内边距沿用 ${tokens(s)['--p-padding']}；标题与副标题间距 4px，Header 与内容间距 16px，正文区块间距 16–24px。卡片禁止再嵌套同等级卡片。
+- KPI 卡只表达一个核心指标：标题 12–14px / 500，数值 ${s.metricValueSize}px / 600，单位 12–14px并与数字基线对齐，环比/同比 12px置于数值下方。数字使用 tabular-nums；数值最多两行，超长时缩写为万/亿并在 Tooltip 展示完整值。
+- 同一行 KPI 卡高度一致；默认 3–4 张/行，卡片宽度小于 220px 时改为两列或单列，禁止继续缩小字号。没有比较基准时不显示伪造的涨跌状态。
 
 ## 6. 企业页面、数据与反馈
 - 页面模式必须从“看板、列表、详情、创建/编辑”中选择，并明确本页的主要任务和主要操作；不要把多种任务堆到同一首屏。
@@ -640,11 +724,15 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 
 ## 7. 数据可视化规范
 - 图表先回答一个问题，再选择图形。标题直接写清指标或结论，避免“数据分析”“趋势图”一类空泛标题。
-- 图表卡片：标题位于左上角，字号 ${s.chartTitleSize}px、字重 600；副标题与口径说明字号 ${s.chartLabelSize}px；坐标轴、刻度、图例和数据来源字号 ${s.chartAxisSize}px。
-- 卡片内边距：${s.chartCardPadding}px；标题区、图例区、绘图区和来源区保持稳定顺序。标题可换行，筛选或操作放在标题区右侧。
+- 图表卡片：标题位于左上角，字号 ${s.chartTitleSize}px、字重 600；副标题、数据标签与注释字号 ${s.chartLabelSize}px；坐标轴、刻度、图例和数据来源字号 ${s.chartAxisSize}px。所有文字允许按容器换行，禁止用缩小到 10px 以下的方式塞进一行。
+- 卡片内边距：${s.chartCardPadding}px；标题区最小高度 ${s.cardHeaderHeight}px，绘图区基准高度 ${s.chartHeight}px；标题区、图例区、绘图区、结论区和来源区保持稳定顺序。标题最多两行，筛选或操作放在标题区右侧并保持顶部对齐。
 - 图例：${s.chartLegend}；网格线：${s.chartGrid}。网格线使用边框色，不抢数据；轴线只在理解刻度所必需时出现。
+- 坐标轴保留 4–6 个主要刻度；单位写在轴标题或卡片副标题中，不在每个刻度重复。数值统一千分位和小数位，0 基线必须可识别，截断坐标轴时要明确标注。
+- 图例每行建议不超过 4 项，优先直接标注数据；系列超过 6 个时改用筛选、分面或小多图。注释只标记峰值、异常、目标等关键事件，单图最多 3 条，避免遮挡数据。
 - 数据文字使用主要文字色；坐标轴、图例、口径和来源使用次要文字色；正负向语义分别使用成功色和错误色，不能只靠红绿区分。
 - 分类色板（${s.chartPalette}）：${s.chartColors.join('、')}。同一业务对象跨图保持同色；单序列默认使用品牌主色，多序列再启用分类色。
+- 标签策略：${s.chartLabelStrategy}。默认顺序是“完整显示 → 两行换行 → 缩写并提供 Tooltip → 间隔抽样 → 横向滚动/切换横向图”，不得直接裁掉关键标签。轴标签与图例不得小于 10px，业务中台建议保持 ${s.chartAxisSize}px。
+- 分类数量上限：单张图默认最多 ${s.chartMaxCategories} 个可见类别；超出后优先聚合“其他”、提供 Top N/完整表格或切换为可筛选视图，禁止无限压缩柱宽、扇区或字号。
 - 图表色与卡片背景的图形对比度：${chartChecks(s)
     .map(
       (item) =>
@@ -654,10 +742,16 @@ ${roles.map(([k, label, use]) => `| ${label} | ${s.colors[k]} | ${use} |`).join(
 
 | 图表 | 适用问题 | 统一规则 |
 | --- | --- | --- |
-| 柱状图 | 类别比较、排名 | 数值轴从 0 开始；长标签改用横向条形；无业务顺序时按数值排序；单序列不使用彩虹色。 |
-| 折线图 | 连续时间趋势 | 建议至少 8–12 个时间点；线宽 2px、点默认隐藏；重点序列实线高亮，其余降噪；缺失值不得自动连线。 |
-| 饼图 / 环图 | 少量类别的粗略占比 | 最多 5 个主要扇区，其余合并“其他”；显示总量或明确分母；需要精确比较时改用 100% 堆叠条形图。禁用 3D 与分离扇区。 |
-| 桑基图 | 阶段间的数量流向 | 从左到右；节点按阶段分列并保持同一业务对象颜色；流带宽度映射数值；标签贴近节点；控制交叉，提供总量与口径。 |
+| 柱状图 | 类别比较、排名 | 数值轴从 0 开始；柱宽 24–56px，当前柱间距 ${s.chartBarGap}%；建议 5–12 根，最多 ${s.chartMaxCategories} 根；长标签先两行，再改横向条形；无业务顺序时按数值排序；单序列不使用彩虹色。 |
+| 折线图 | 连续时间趋势 | 建议 8–24 个时间点，超过 24 点按周期抽样或缩放；线宽 2px、点默认隐藏；最多 4 条同时可见，重点序列实线高亮，其余降噪；缺失值断线并标注，不得自动补 0 或连线。 |
+| 饼图 / 环图 | 少量类别的粗略占比 | 只展示 2–5 个主要扇区，其余合并“其他”；环图外径建议 160–240px、内径为外径 55–65%；显示总量或明确分母；差异小于 5% 或需要精确比较时改用 100% 堆叠条形图。禁用 3D 与分离扇区。 |
+| 桑基图 | 阶段间的数量流向 | 3–8 个阶段/主节点，节点宽 12–20px、同列间距至少 12px；从左到右，流带宽度映射数值，透明度 55–75%；标签贴近节点并保留数值，控制交叉，流入与流出口径必须守恒。 |
+
+### 图表响应式与交互
+- 绘图区使用容器宽度自适应，高度以 ${s.chartHeight}px 为基准而非绝对锁死：宽度小于 480px 时最低 240px；桑基图或长分类可在卡片内部横向滚动，但页面本身不得横向滚动。
+- Tooltip 必须包含系列/类别、完整值、单位、时间与口径；跟随焦点和指针，不能遮住当前数据点。Hover 可增强反馈，但同等信息必须可通过键盘焦点和可见数据表获得。
+- 数据更新不得造成卡片跳高；加载骨架与最终绘图区同尺寸。空数据、错误、无权限和数据截断都在图表卡片内说明原因与下一步。
+- 卡片底部必须保留“来源、更新时间、统计周期、单位/币种”四类元信息；若某项不适用可省略，不得写模糊的“数据来源：系统”。
 
 图表不能只用颜色传达信息：同时使用直接标签、线型、节点名称或数值。Tooltip 保留系列名、原始值、单位与时间；数字统一千分位和小数位。加载、空数据、错误、数据截断状态都要在卡片内部给出原因和下一步。
 ${chartWarn.length ? `当前有 ${chartWarn.length} 个图表色与容器背景的对比度不足 3:1；调整后再用于小型数据标记、细线或相邻区域。` : '当前图表色均通过与容器背景的 3:1 图形对比度检查。'}

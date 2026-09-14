@@ -29,6 +29,11 @@ function Grid({
 
 function BarChart({ design }: { design: Design }) {
   const values = [68, 118, 86, 154, 132, 183];
+  const slot = 82;
+  const barWidth = Math.max(
+    24,
+    Math.round(slot * (1 - design.chartBarGap / 100)),
+  );
   return (
     <svg
       viewBox="0 0 600 250"
@@ -62,9 +67,9 @@ function BarChart({ design }: { design: Design }) {
         <g key={v}>
           <rect
             className="chart-bar"
-            x={58 + i * 82}
+            x={82 + i * slot - barWidth / 2}
             y={205 - (v / 200) * 188}
-            width="48"
+            width={barWidth}
             height={(v / 200) * 188}
             rx="3"
             fill="var(--p-primary)"
@@ -411,6 +416,12 @@ export function DataCharts({ design }: { design: Design }) {
             {(['bar', 'line', 'pie', 'sankey'] as Kind[]).indexOf(kind) + 1} / 4
           </span>
         </header>
+        <div className="chart-spec-strip" aria-label="当前图表规格">
+          <span>绘图区 {design.chartHeight}px</span>
+          <span>最多 {design.chartMaxCategories} 类</span>
+          <span>柱间距 {design.chartBarGap}%</span>
+          <span>{design.chartLabelStrategy}</span>
+        </div>
         {design.chartLegend !== '底部左对齐' && legend}
         <div
           className="chart-stage"
